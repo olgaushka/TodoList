@@ -164,9 +164,9 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         let datePicker = UIDatePicker(frame: .zero)
         datePicker.minimumDate = Date()
         datePicker.datePickerMode = .date
-//        if #available(iOS 14.0, *) {
-//            datePicker.preferredDatePickerStyle = .inline
-//        }
+        if #available(iOS 14.0, *) {
+            datePicker.preferredDatePickerStyle = .inline
+        }
         datePicker.isHidden = true
         return datePicker
     }
