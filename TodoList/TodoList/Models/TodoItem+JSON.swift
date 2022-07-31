@@ -50,15 +50,15 @@ extension TodoItem {
         }
 
         if let rawDeadline = jsonObject["deadline"] {
-            guard let deadlineString = rawDeadline as? String, let deadlineValue = formatter.date(from: deadlineString) else { return nil }
-            deadline = deadlineValue
+            guard let deadlineString = rawDeadline as? String else { return nil }
+            deadline = formatter.date(from: deadlineString)
         } else {
             deadline = nil
         }
 
         if let rawModifiedAt = jsonObject["modifiedAt"] {
-            guard let modifiedAtString = rawModifiedAt as? String, let modifiedAtValue = formatter.date(from: modifiedAtString) else { return nil }
-            modifiedAt = modifiedAtValue
+            guard let modifiedAtString = rawModifiedAt as? String else { return nil }
+            modifiedAt = formatter.date(from: modifiedAtString)
         } else {
             modifiedAt = nil
         }
