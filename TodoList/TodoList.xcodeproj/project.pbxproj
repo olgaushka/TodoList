@@ -15,6 +15,7 @@
 		79E163C7289694540052ADA9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 79E163C5289694540052ADA9 /* LaunchScreen.storyboard */; };
 		79E163D2289694540052ADA9 /* TodoListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163D1289694540052ADA9 /* TodoListTests.swift */; };
 		79E163DE2896966F0052ADA9 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163DD2896966F0052ADA9 /* TodoItem.swift */; };
+		79E163E0289697CD0052ADA9 /* TodoItem+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163DF289697CD0052ADA9 /* TodoItem+JSON.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		79E163D1289694540052ADA9 /* TodoListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListTests.swift; sourceTree = "<group>"; };
 		79E163D3289694540052ADA9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		79E163DD2896966F0052ADA9 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
+		79E163DF289697CD0052ADA9 /* TodoItem+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodoItem+JSON.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				79E163DD2896966F0052ADA9 /* TodoItem.swift */,
+				79E163DF289697CD0052ADA9 /* TodoItem+JSON.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				79E163BF289694520052ADA9 /* ViewController.swift in Sources */,
+				79E163E0289697CD0052ADA9 /* TodoItem+JSON.swift in Sources */,
 				79E163BB289694520052ADA9 /* AppDelegate.swift in Sources */,
 				79E163DE2896966F0052ADA9 /* TodoItem.swift in Sources */,
 				79E163BD289694520052ADA9 /* SceneDelegate.swift in Sources */,
