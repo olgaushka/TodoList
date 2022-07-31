@@ -259,7 +259,12 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
     @objc
     private func onDateValueChanged(_ datePicker: UIDatePicker) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMMM yyyy"
+        self.deadlineButton.setTitle(dateFormatter.string(from: datePicker.date), for: .normal)
         self.viewModel.deadline = datePicker.date
+        self.setNeedsLayout()
+        self.layoutIfNeeded()
     }
 
     @objc
