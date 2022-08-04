@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
+final class TodoItemScrollView: UIScrollView {
     var viewModel: TodoItemScrollViewModel {
         didSet {
             self.updateView()
@@ -26,7 +26,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
     private let datePicker: UIDatePicker
     private let deleteButton: UIButton
 
-    private var lastElementBottom: CGFloat = 0
+    private lazy var dateFormatter: DateFormatter = DateFormatter()
 
     override init(frame: CGRect) {
         self.viewModel = TodoItemScrollViewModel.makeDefault()
@@ -44,8 +44,10 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
         super.init(frame: frame)
 
+        self.dateFormatter.dateFormat = "d MMMM yyyy"
         self.setupSubviews()
         self.updateView()
+
     }
 
     required init?(coder: NSCoder) {
@@ -58,7 +60,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         let textViewHeight = Consts.textViewHeight
 
         textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: textViewHeight)
-        lastElementBottom = textView.frame.origin.y + textView.frame.size.height
+        var lastElementBottom = textView.frame.maxY
 
         self.containerView.frame.origin = .init(x: 16, y: lastElementBottom + 16)
 
@@ -73,37 +75,37 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
         deadlineLabel.sizeToFit()
         deadlineLabel.frame.origin = .init(x: 16,
-                                           y: dividerView.frame.origin.y + dividerView.frame.size.height + 17)
+                                           y: dividerView.frame.maxY + 17)
         deadlineSwitch.sizeToFit()
         deadlineSwitch.frame.origin = .init(x: containerView.bounds.width - 12 - deadlineSwitch.frame.width,
-                                           y: dividerView.frame.origin.y + dividerView.frame.size.height + 12)
+                                           y: dividerView.frame.maxY + 12)
         deadlineButton.sizeToFit()
         deadlineButton.frame.origin = .init(x: 16,
-                                           y: deadlineLabel.frame.origin.y + deadlineLabel.frame.size.height)
+                                           y: deadlineLabel.frame.maxY + 4)
 
 
         datePicker.sizeToFit()
         let ratio = datePicker.frame.size.height / datePicker.frame.size.width
         let datePickerSize = CGSize.init(width: self.containerView.bounds.width, height: self.containerView.bounds.width * ratio)
         self.datePicker.frame = .init(
-            origin: .init(x: 0, y: deadlineButton.frame.origin.y + deadlineButton.frame.size.height),
+            origin: .init(x: 0, y: deadlineButton.frame.maxY + 9),
             size: datePickerSize
         )
 
         let containerViewLastElementBottom: CGFloat
         if self.datePicker.isHidden {
-            containerViewLastElementBottom = self.deadlineLabel.frame.origin.y + self.deadlineLabel.frame.size.height + 26
+            containerViewLastElementBottom = self.deadlineLabel.frame.maxY + 26
         } else {
-            containerViewLastElementBottom = self.datePicker.frame.origin.y + self.datePicker.frame.size.height
+            containerViewLastElementBottom = self.datePicker.frame.maxY
         }
 
         self.containerView.frame.size = .init(width: self.bounds.width - 32, height: containerViewLastElementBottom)
 
-        lastElementBottom = self.containerView.frame.origin.y + self.containerView.frame.size.height
+        lastElementBottom = self.containerView.frame.maxY
 
         deleteButton.frame.size = .init(width: self.bounds.width - 32, height: 56)
         deleteButton.frame.origin = .init(x: 16, y: lastElementBottom + 16)
-        lastElementBottom = deleteButton.frame.origin.y + deleteButton.frame.size.height
+        lastElementBottom = deleteButton.frame.maxY
 
         self.contentSize = .init(width: self.bounds.width, height: lastElementBottom)
     }
@@ -233,9 +235,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
         if let deadline = viewModel.deadline {
             self.deadlineSwitch.setOn(true, animated: true)
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "d MMMM yyyy"
-            self.deadlineButton.setTitle(dateFormatter.string(from: deadline), for: .normal)
+            self.deadlineButton.setTitle(self.dateFormatter.string(from: deadline), for: .normal)
             self.datePicker.setDate(deadline, animated: true)
             self.deadlineButton.isHidden = false
             datePicker.isHidden = false
@@ -246,18 +246,12 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         }
     }
 
-    func textViewDidChange(_ textView: UITextView) {
-        self.viewModel.text = textView.text
-    }
-
     @objc
     private func switchValueDidChange(_ sender: UISwitch) {
         if sender.isOn {
             print("on")
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "d MMMM yyyy"
             let tomorrow = Date(timeIntervalSinceNow: 24 * 60 * 60)
-            self.deadlineButton.setTitle(dateFormatter.string(from: tomorrow), for: .normal)
+            self.deadlineButton.setTitle(self.dateFormatter.string(from: tomorrow), for: .normal)
             self.datePicker.date = tomorrow
             self.deadlineButton.isHidden = false
         } else {
@@ -272,9 +266,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
     @objc
     private func onDateValueChanged(_ datePicker: UIDatePicker) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMMM yyyy"
-        self.deadlineButton.setTitle(dateFormatter.string(from: datePicker.date), for: .normal)
+        self.deadlineButton.setTitle(self.dateFormatter.string(from: datePicker.date), for: .normal)
         self.viewModel.deadline = datePicker.date
         self.setNeedsLayout()
         self.layoutIfNeeded()
@@ -306,5 +298,11 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
     @objc
     private func deleteButtonClicked(_ button: UIButton) {
         self.viewModel.didTapDelete?()
+    }
+}
+
+extension TodoItemScrollView: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        self.viewModel.text = textView.text
     }
 }
