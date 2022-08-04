@@ -26,7 +26,7 @@ class TodoItemViewController: UIViewController {
             self.scrollView.viewModel = viewModel
         }
 
-        view.backgroundColor = .white
+        view.backgroundColor = UIColor(red: 0.97, green: 0.966, blue: 0.951, alpha: 1)
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -43,6 +43,8 @@ class TodoItemViewController: UIViewController {
         self.navigationItem.title = "Дело"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(done))
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+        self.navigationController?.navigationBar.shadowImage = UIImage()
     }
 
     @objc

@@ -60,7 +60,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: textViewHeight)
         lastElementBottom = textView.frame.origin.y + textView.frame.size.height
 
-        self.containerView.frame = .init(x: 16, y: lastElementBottom + 16, width: self.bounds.width - 32, height: 112)
+        self.containerView.frame.origin = .init(x: 16, y: lastElementBottom + 16)
 
 
         importanceLabel.sizeToFit()
@@ -81,18 +81,25 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         deadlineButton.frame.origin = .init(x: 16,
                                            y: deadlineLabel.frame.origin.y + deadlineLabel.frame.size.height)
 
-        let datePickerSize = self.datePicker.sizeThatFits(.init(width: self.frame.size.width, height: .greatestFiniteMagnitude))
+
+        datePicker.sizeToFit()
+        let ratio = datePicker.frame.size.height / datePicker.frame.size.width
+        let datePickerSize = CGSize.init(width: self.containerView.bounds.width, height: self.containerView.bounds.width * ratio)
         self.datePicker.frame = .init(
-            origin: .init(x: 0, y: self.containerView.frame.origin.y + self.containerView.frame.size.height),
+            origin: .init(x: 0, y: deadlineButton.frame.origin.y + deadlineButton.frame.size.height),
             size: datePickerSize
         )
 
-
+        let containerViewLastElementBottom: CGFloat
         if self.datePicker.isHidden {
-            lastElementBottom = self.containerView.frame.origin.y + self.containerView.frame.size.height
+            containerViewLastElementBottom = self.deadlineLabel.frame.origin.y + self.deadlineLabel.frame.size.height + 26
         } else {
-            lastElementBottom = self.datePicker.frame.origin.y + self.datePicker.frame.size.height
+            containerViewLastElementBottom = self.datePicker.frame.origin.y + self.datePicker.frame.size.height
         }
+
+        self.containerView.frame.size = .init(width: self.bounds.width - 32, height: containerViewLastElementBottom)
+
+        lastElementBottom = self.containerView.frame.origin.y + self.containerView.frame.size.height
 
         deleteButton.frame.size = .init(width: self.bounds.width - 32, height: 56)
         deleteButton.frame.origin = .init(x: 16, y: lastElementBottom + 16)
@@ -109,6 +116,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         let textView = UITextView(frame: .zero)
         textView.font = .systemFont(ofSize: 17)
         textView.textContainerInset = .init(top: 16, left: 17, bottom: 17, right: 16)
+        textView.layer.cornerRadius = 16
 //        textView.text = "Что надо сделать?"
 //        textView.textColor = UIColor.lightGray
         return textView
@@ -116,6 +124,8 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
 
     private static func makeContainerView() -> UIView {
         let view = UIView(frame: .zero)
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 16
         return view
     }
 
@@ -177,6 +187,9 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         button.setTitleColor(.systemRed, for: .normal)
         button.setTitleColor(.systemGray, for: .disabled)
         button.titleLabel?.font = .systemFont(ofSize: 17)
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 16
+
         return button
     }
 
@@ -195,7 +208,7 @@ final class TodoItemScrollView: UIScrollView, UITextViewDelegate {
         self.containerView.addSubview(self.deadlineButton)
         self.deadlineButton.addTarget(self, action: #selector(deadlineButtonClicked(_:)), for: .touchUpInside)
 
-        addSubview(self.datePicker)
+        self.containerView.addSubview(self.datePicker)
         self.datePicker.addTarget(self, action: #selector(onDateValueChanged(_:)), for: .valueChanged)
 
         addSubview(self.deleteButton)
