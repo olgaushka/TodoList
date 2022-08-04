@@ -30,11 +30,11 @@ extension TodoItem {
     }
 
     static func parse(json: Any) -> TodoItem? {
-        guard let jsonObject = json as? [String: Any] else { return nil }
-        guard let rawId = jsonObject["id"], let id = rawId as? String else { return nil }
-        guard let rawText = jsonObject["text"], let text = rawText as? String else { return nil }
-        guard let rawIsDone = jsonObject["isDone"], let isDone = rawIsDone as? Bool else { return nil }
-        guard let rawCreatedAt = jsonObject["createdAt"], let createdAtString = rawCreatedAt as? String else { return nil }
+        guard let jsonObject = json as? [String: Any],
+              let id = jsonObject["id"] as? String,
+              let text = jsonObject["text"] as? String,
+              let isDone = jsonObject["isDone"] as? Bool,
+              let createdAtString = jsonObject["createdAt"] as? String else { return nil }
 
         let formatter = ISO8601DateFormatter()
         guard let createdAt = formatter.date(from: createdAtString) else { return nil }
@@ -50,15 +50,15 @@ extension TodoItem {
         }
 
         if let rawDeadline = jsonObject["deadline"] {
-            guard let deadlineString = rawDeadline as? String else { return nil }
-            deadline = formatter.date(from: deadlineString)
+            guard let deadlineString = rawDeadline as? String, let deadlineDate = formatter.date(from: deadlineString) else { return nil }
+            deadline = deadlineDate
         } else {
             deadline = nil
         }
 
         if let rawModifiedAt = jsonObject["modifiedAt"] {
-            guard let modifiedAtString = rawModifiedAt as? String else { return nil }
-            modifiedAt = formatter.date(from: modifiedAtString)
+            guard let modifiedAtString = rawModifiedAt as? String, let modifiedAtDate = formatter.date(from: modifiedAtString) else { return nil }
+            modifiedAt = modifiedAtDate
         } else {
             modifiedAt = nil
         }

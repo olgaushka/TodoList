@@ -10,26 +10,16 @@ import Foundation
 
 final class FileCache {
 
-    public private(set) var items: [TodoItem]
-    init() {
-        items = []
-    }
+    private(set) var items: [TodoItem] = []
 
     func add(item: TodoItem) {
-        for value in self.items {
-            if value.id == item.id {
-                return
-            }
-        }
+        if self.items.contains(where: { $0.id == item.id }) { return }
+
         self.items.append(item)
     }
 
-    func remove(item: TodoItem) {
-        for (index, value) in self.items.enumerated() {
-            if value.id == item.id {
-                self.items.remove(at: index)
-            }
-        }
+    func removeBy(id: String) {
+        self.items.removeAll { $0.id == id }
     }
 
     func save(to fileName: String) {

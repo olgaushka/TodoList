@@ -20,7 +20,7 @@ class TodoItemViewController: UIViewController {
             let viewModel = TodoItemScrollViewModel(text: item.text, importance: item.importance, deadline: item.deadline)
             viewModel.didTapDelete = { [weak self] in
                 guard let self = self else { return }
-                fileCache.remove(item: item)
+                fileCache.removeBy(id: item.id)
                 self.scrollView.viewModel = TodoItemScrollViewModel.makeDefault()
             }
             self.scrollView.viewModel = viewModel
@@ -55,7 +55,7 @@ class TodoItemViewController: UIViewController {
         fileCache.load(from: "test.json")
         let viewModel = self.scrollView.viewModel
         if let item = fileCache.items.first {
-            fileCache.remove(item: item)
+            fileCache.removeBy(id: item.id)
             let changedItem = TodoItem(id: item.id, text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: item.isDone, createdAt: item.createdAt, modifiedAt: Date())
             fileCache.add(item: changedItem)
         } else {
