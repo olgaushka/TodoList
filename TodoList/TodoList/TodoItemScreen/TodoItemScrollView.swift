@@ -57,57 +57,70 @@ final class TodoItemScrollView: UIScrollView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let textViewHeight = Consts.textViewHeight
+        let test = UIDevice.current.orientation.isLandscape
+        if UIDevice.current.orientation.isLandscape {
+            print(self.bounds)
+            textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: self.bounds.height)
+            self.containerView.isHidden = true
+            self.deleteButton.isHidden = true
 
-        textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: textViewHeight)
-        var lastElementBottom = textView.frame.maxY
-
-        self.containerView.frame.origin = .init(x: 16, y: lastElementBottom + 16)
-
-
-        importanceLabel.sizeToFit()
-        importanceLabel.frame.origin = .init(x: 16, y: 17)
-
-        self.segmentedControl.frame.size = .init(width: 150, height: 36)
-        self.segmentedControl.frame.origin = .init(x: containerView.bounds.width - 12 - segmentedControl.frame.width, y: 10)
-
-        self.dividerView.frame = .init(x: 0, y: 56, width: containerView.bounds.width, height: 1)
-
-        deadlineLabel.sizeToFit()
-        deadlineLabel.frame.origin = .init(x: 16,
-                                           y: dividerView.frame.maxY + 17)
-        deadlineSwitch.sizeToFit()
-        deadlineSwitch.frame.origin = .init(x: containerView.bounds.width - 12 - deadlineSwitch.frame.width,
-                                           y: dividerView.frame.maxY + 12)
-        deadlineButton.sizeToFit()
-        deadlineButton.frame.origin = .init(x: 16,
-                                           y: deadlineLabel.frame.maxY + 4)
-
-
-        datePicker.sizeToFit()
-        let ratio = datePicker.frame.size.height / datePicker.frame.size.width
-        let datePickerSize = CGSize.init(width: self.containerView.bounds.width, height: self.containerView.bounds.width * ratio)
-        self.datePicker.frame = .init(
-            origin: .init(x: 0, y: deadlineButton.frame.maxY + 9),
-            size: datePickerSize
-        )
-
-        let containerViewLastElementBottom: CGFloat
-        if self.datePicker.isHidden {
-            containerViewLastElementBottom = self.deadlineLabel.frame.maxY + 26
         } else {
-            containerViewLastElementBottom = self.datePicker.frame.maxY
+
+            self.containerView.isHidden = false
+            self.deleteButton.isHidden = false
+
+            let textViewHeight = Consts.textViewHeight
+
+            textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: textViewHeight)
+            var lastElementBottom = textView.frame.maxY
+
+            self.containerView.frame.origin = .init(x: 16, y: lastElementBottom + 16)
+
+
+            importanceLabel.sizeToFit()
+            importanceLabel.frame.origin = .init(x: 16, y: 17)
+
+            self.segmentedControl.frame.size = .init(width: 150, height: 36)
+            self.segmentedControl.frame.origin = .init(x: containerView.bounds.width - 12 - segmentedControl.frame.width, y: 10)
+
+            self.dividerView.frame = .init(x: 0, y: 56, width: containerView.bounds.width, height: 1)
+
+            deadlineLabel.sizeToFit()
+            deadlineLabel.frame.origin = .init(x: 16,
+                                               y: dividerView.frame.maxY + 17)
+            deadlineSwitch.sizeToFit()
+            deadlineSwitch.frame.origin = .init(x: containerView.bounds.width - 12 - deadlineSwitch.frame.width,
+                                               y: dividerView.frame.maxY + 12)
+            deadlineButton.sizeToFit()
+            deadlineButton.frame.origin = .init(x: 16,
+                                               y: deadlineLabel.frame.maxY + 4)
+
+
+            datePicker.sizeToFit()
+            let ratio = datePicker.frame.size.height / datePicker.frame.size.width
+            let datePickerSize = CGSize.init(width: self.containerView.bounds.width, height: self.containerView.bounds.width * ratio)
+            self.datePicker.frame = .init(
+                origin: .init(x: 0, y: deadlineButton.frame.maxY + 9),
+                size: datePickerSize
+            )
+
+            let containerViewLastElementBottom: CGFloat
+            if self.datePicker.isHidden {
+                containerViewLastElementBottom = self.deadlineLabel.frame.maxY + 26
+            } else {
+                containerViewLastElementBottom = self.datePicker.frame.maxY
+            }
+
+            self.containerView.frame.size = .init(width: self.bounds.width - 32, height: containerViewLastElementBottom)
+
+            lastElementBottom = self.containerView.frame.maxY
+
+            deleteButton.frame.size = .init(width: self.bounds.width - 32, height: 56)
+            deleteButton.frame.origin = .init(x: 16, y: lastElementBottom + 16)
+            lastElementBottom = deleteButton.frame.maxY
+
+            self.contentSize = .init(width: self.bounds.width, height: lastElementBottom)
         }
-
-        self.containerView.frame.size = .init(width: self.bounds.width - 32, height: containerViewLastElementBottom)
-
-        lastElementBottom = self.containerView.frame.maxY
-
-        deleteButton.frame.size = .init(width: self.bounds.width - 32, height: 56)
-        deleteButton.frame.origin = .init(x: 16, y: lastElementBottom + 16)
-        lastElementBottom = deleteButton.frame.maxY
-
-        self.contentSize = .init(width: self.bounds.width, height: lastElementBottom)
     }
 
     private enum Consts {
@@ -251,6 +264,7 @@ final class TodoItemScrollView: UIScrollView {
         if sender.isOn {
             print("on")
             let tomorrow = Date(timeIntervalSinceNow: 24 * 60 * 60)
+            self.viewModel.deadline = tomorrow
             self.deadlineButton.setTitle(self.dateFormatter.string(from: tomorrow), for: .normal)
             self.datePicker.date = tomorrow
             self.deadlineButton.isHidden = false
