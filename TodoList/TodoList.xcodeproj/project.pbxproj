@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		7954A6E0289C43BB00F83153 /* TodoItemsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */; };
-		7954A6E4289C442400F83153 /* TodoItemsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7954A6E3289C442400F83153 /* TodoItemsListView.swift */; };
 		79E163BB289694520052ADA9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163BA289694520052ADA9 /* AppDelegate.swift */; };
 		79E163BD289694520052ADA9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163BC289694520052ADA9 /* SceneDelegate.swift */; };
 		79E163BF289694520052ADA9 /* TodoItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163BE289694520052ADA9 /* TodoItemViewController.swift */; };
@@ -35,7 +34,6 @@
 
 /* Begin PBXFileReference section */
 		7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemsListViewController.swift; sourceTree = "<group>"; };
-		7954A6E3289C442400F83153 /* TodoItemsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemsListView.swift; sourceTree = "<group>"; };
 		79E163B7289694520052ADA9 /* TodoList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TodoList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79E163BA289694520052ADA9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		79E163BC289694520052ADA9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -147,7 +145,6 @@
 			isa = PBXGroup;
 			children = (
 				7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */,
-				7954A6E3289C442400F83153 /* TodoItemsListView.swift */,
 			);
 			path = TodoItemsListScreen;
 			sourceTree = "<group>";
@@ -266,7 +263,6 @@
 				7954A6E0289C43BB00F83153 /* TodoItemsListViewController.swift in Sources */,
 				79E163E0289697CD0052ADA9 /* TodoItem+JSON.swift in Sources */,
 				79E163BB289694520052ADA9 /* AppDelegate.swift in Sources */,
-				7954A6E4289C442400F83153 /* TodoItemsListView.swift in Sources */,
 				79E163DE2896966F0052ADA9 /* TodoItem.swift in Sources */,
 				79E163E328969A050052ADA9 /* FileCache.swift in Sources */,
 				79E163E62896B5970052ADA9 /* TodoItemScrollView.swift in Sources */,
