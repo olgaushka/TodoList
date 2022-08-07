@@ -22,6 +22,14 @@ final class FileCache {
         self.items.removeAll { $0.id == id }
     }
 
+    func modify(item: TodoItem) {
+        for (index, value) in self.items.enumerated() {
+            if value.id == item.id {
+                self.items[index] = item
+            }
+        }
+    }
+
     func save(to fileName: String) {
         guard let fileURL = fileURL(for: fileName) else { return }
         
