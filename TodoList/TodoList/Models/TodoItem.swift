@@ -33,3 +33,9 @@ struct TodoItem {
         self.modifiedAt = modifiedAt
     }
 }
+
+extension TodoItem {
+    func toggleCompleted() -> TodoItem {
+        TodoItem(id: self.id, text: self.text, importance: self.importance, deadline: self.deadline, isDone: !self.isDone, createdAt: self.createdAt, modifiedAt: self.modifiedAt)
+  }
+}

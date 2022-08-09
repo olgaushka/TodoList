@@ -171,8 +171,7 @@ final class TodoItemsListViewController: UIViewController {
     private func didTapDone(viewModel: TodoItemCellViewModel) {
         let dependencies = self.dependencies
         guard let item = dependencies.fileCache.items.first(where: { $0.id == viewModel.id }) else { return }
-        let newIsDoneValue = !item.isDone
-        let changedItem = TodoItem(id: item.id, text: item.text, importance: item.importance, deadline: item.deadline, isDone: newIsDoneValue, createdAt: item.createdAt, modifiedAt: item.modifiedAt)
+        let changedItem = item.toggleCompleted()
         dependencies.fileCache.modify(item: changedItem)
         dependencies.fileCache.save(to: dependencies.fileName)
         self.updateData()
