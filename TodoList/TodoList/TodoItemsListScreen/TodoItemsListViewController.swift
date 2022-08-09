@@ -152,7 +152,7 @@ final class TodoItemsListViewController: UIViewController {
             todoItemViewController.item = item
         }
         todoItemViewController.delegate = self
-        let navigationController = UINavigationController.init(rootViewController: todoItemViewController)
+        let navigationController = UINavigationController(rootViewController: todoItemViewController)
         self.present(navigationController, animated: true, completion: nil)
     }
 
