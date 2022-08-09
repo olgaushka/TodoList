@@ -23,12 +23,7 @@ final class TodoItemsListViewController: UIViewController {
         return button
     }()
 
-    private let fileCache: FileCache = {
-        let fileCache = FileCache()
-        fileCache.load(from: "test.json")
-        return fileCache
-
-    }()
+    private let dependencies: Dependencies
 
     private let addButton: UIButton = {
         let button = UIButton()
@@ -46,6 +41,15 @@ final class TodoItemsListViewController: UIViewController {
     private var addButtonBottomConstraint: NSLayoutConstraint = {
         return NSLayoutConstraint()
     }()
+
+    init(dependencies: Dependencies) {
+        self.dependencies = dependencies
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     deinit {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -122,8 +126,9 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func updateViewModels() {
-        self.fileCache.load(from: "test.json")
-        let allItems = self.fileCache.items
+        let dependencies = self.dependencies
+        dependencies.fileCache.load(from: dependencies.fileName)
+        let allItems = dependencies.fileCache.items
         let notCompletedItems = allItems.filter({ !$0.isDone })
         self.completedLabel.text = "Выполнено — \(allItems.count - notCompletedItems.count)"
         let items: [TodoItem]
@@ -147,8 +152,8 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapInfo(viewModel: TodoItemCellViewModel?) {
-        let todoItemViewController = TodoItemViewController()
-        if let item = self.fileCache.items.first(where: { $0.id == viewModel?.id }) {
+        let todoItemViewController = TodoItemViewController(dependencies: self.dependencies)
+        if let item = self.dependencies.fileCache.items.first(where: { $0.id == viewModel?.id }) {
             todoItemViewController.item = item
         }
         todoItemViewController.delegate = self
@@ -157,17 +162,19 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapDelete(viewModel: TodoItemCellViewModel) {
-        self.fileCache.removeBy(id: viewModel.id)
-        self.fileCache.save(to: "test.json")
+        let dependencies = self.dependencies
+        dependencies.fileCache.removeBy(id: viewModel.id)
+        dependencies.fileCache.save(to: dependencies.fileName)
         self.updateData()
     }
 
     private func didTapDone(viewModel: TodoItemCellViewModel) {
-        guard let item = self.fileCache.items.first(where: { $0.id == viewModel.id }) else { return }
+        let dependencies = self.dependencies
+        guard let item = dependencies.fileCache.items.first(where: { $0.id == viewModel.id }) else { return }
         let newIsDoneValue = !item.isDone
         let changedItem = TodoItem(id: item.id, text: item.text, importance: item.importance, deadline: item.deadline, isDone: newIsDoneValue, createdAt: item.createdAt, modifiedAt: item.modifiedAt)
-        self.fileCache.modify(item: changedItem)
-        self.fileCache.save(to: "test.json")
+        dependencies.fileCache.modify(item: changedItem)
+        dependencies.fileCache.save(to: dependencies.fileName)
         self.updateData()
     }
 
@@ -239,8 +246,9 @@ extension TodoItemsListViewController: UITableViewDataSource {
             guard let self = self else { return }
 
             let newItem = TodoItem(text: footerViewModel.text)
-            self.fileCache.add(item: newItem)
-            self.fileCache.save(to: "test.json")
+            let dependencies = self.dependencies
+            dependencies.fileCache.add(item: newItem)
+            dependencies.fileCache.save(to: dependencies.fileName)
             self.updateData()
             UIView.setAnimationsEnabled(false)
             self.itemsTableView.reloadSections(IndexSet(integer: 0), with: UITableView.RowAnimation.none)

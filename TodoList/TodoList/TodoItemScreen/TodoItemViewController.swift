@@ -13,12 +13,17 @@ class TodoItemViewController: UIViewController {
     private var tapGesture: UITapGestureRecognizer = UITapGestureRecognizer()
     weak var delegate: TodoItemViewControllerDelegate?
     var item: TodoItem = TodoItem(text: "")
-    private let fileCache: FileCache = {
-        let fileCache = FileCache()
-        fileCache.load(from: "test.json")
-        return fileCache
 
-    }()
+    private let dependencies: Dependencies
+
+    init(dependencies: Dependencies) {
+        self.dependencies = dependencies
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     deinit {
         NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
@@ -36,8 +41,9 @@ class TodoItemViewController: UIViewController {
         let viewModel = TodoItemScrollViewModel(text: self.item.text, importance: self.item.importance, deadline: self.item.deadline)
         viewModel.didTapDelete = { [weak self] in
             guard let self = self else { return }
-            self.fileCache.removeBy(id: self.item.id)
-            self.fileCache.save(to: "test.json")
+            let dependencies = self.dependencies
+            dependencies.fileCache.removeBy(id: self.item.id)
+            dependencies.fileCache.save(to: dependencies.fileName)
             self.delegate?.todoItemViewControllerDidFinish(self)
             self.dismiss(animated: true)
         }
@@ -103,14 +109,15 @@ class TodoItemViewController: UIViewController {
         print("Сохранить")
 
         let viewModel = self.scrollView.viewModel
-        if let item = self.fileCache.items.first(where: { $0.id == self.item.id }) {
+        let dependencies = self.dependencies
+        if let item = dependencies.fileCache.items.first(where: { $0.id == self.item.id }) {
             let changedItem = TodoItem(id: item.id, text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: item.isDone, createdAt: item.createdAt, modifiedAt: Date())
-            self.fileCache.modify(item: changedItem)
+            dependencies.fileCache.modify(item: changedItem)
         } else {
             let newItem = TodoItem(text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: false, createdAt: Date())
-            fileCache.add(item: newItem)
+            dependencies.fileCache.add(item: newItem)
         }
-        fileCache.save(to: "test.json")
+        dependencies.fileCache.save(to: dependencies.fileName)
         self.delegate?.todoItemViewControllerDidFinish(self)
         self.dismiss(animated: true)
     }
