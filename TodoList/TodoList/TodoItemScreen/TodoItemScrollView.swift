@@ -135,7 +135,7 @@ final class TodoItemScrollView: UIScrollView {
 
     private static func makeTextView() -> UITextView {
         let textView = UITextView(frame: .zero)
-        textView.font = .systemFont(ofSize: 17)
+        textView.font = FontScheme.shared.body
         textView.textContainerInset = .init(top: 16, left: 17, bottom: 17, right: 16)
         textView.layer.cornerRadius = 16
 //        textView.text = "Что надо сделать?"
@@ -145,7 +145,7 @@ final class TodoItemScrollView: UIScrollView {
 
     private static func makeContainerView() -> UIView {
         let view = UIView(frame: .zero)
-        view.backgroundColor = .white
+        view.backgroundColor = ColorScheme.shared.backSecondary
         view.layer.cornerRadius = 16
         return view
     }
@@ -153,7 +153,7 @@ final class TodoItemScrollView: UIScrollView {
     private static func makeImportanceLabel() -> UILabel {
         let label = UILabel(frame: .zero)
         label.text = "Важность"
-        label.font = .systemFont(ofSize: 17)
+        label.font = FontScheme.shared.body
         return label
     }
 
@@ -165,14 +165,14 @@ final class TodoItemScrollView: UIScrollView {
 
     private static func makeDividerView() -> UIView {
         let view = UIView(frame: .zero)
-        view.backgroundColor = .systemGray
+        view.backgroundColor = ColorScheme.shared.separator
         return view
     }
 
     private static func makeDeadlineLabel() -> UILabel {
         let label = UILabel(frame: .zero)
         label.text = "Сделать до"
-        label.font = .systemFont(ofSize: 17)
+        label.font = FontScheme.shared.body
         return label
     }
 
@@ -183,8 +183,8 @@ final class TodoItemScrollView: UIScrollView {
 
     private static func makeDeadlineButton() -> UIButton {
         let button = UIButton(frame: .zero)
-        button.setTitleColor(.systemBlue, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 13)
+        button.setTitleColor(ColorScheme.shared.blue, for: .normal)
+        button.titleLabel?.font = FontScheme.shared.footnote
         button.contentEdgeInsets = UIEdgeInsets(top: .leastNormalMagnitude, left: .leastNormalMagnitude, bottom: .leastNormalMagnitude, right: .leastNormalMagnitude)
         button.contentHorizontalAlignment = .left
         button.isHidden = true
@@ -205,10 +205,10 @@ final class TodoItemScrollView: UIScrollView {
     private static func makeDeleteButton() -> UIButton {
         let button = UIButton(frame: .zero)
         button.setTitle("Удалить", for: .normal)
-        button.setTitleColor(.systemRed, for: .normal)
-        button.setTitleColor(.systemGray, for: .disabled)
-        button.titleLabel?.font = .systemFont(ofSize: 17)
-        button.backgroundColor = .white
+        button.setTitleColor(ColorScheme.shared.red, for: .normal)
+        button.setTitleColor(ColorScheme.shared.labelTertiary, for: .disabled)
+        button.titleLabel?.font = FontScheme.shared.body
+        button.backgroundColor = ColorScheme.shared.backSecondary
         button.layer.cornerRadius = 16
 
         return button

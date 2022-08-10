@@ -35,7 +35,7 @@ final class TodoItemCell: UITableViewCell {
 
     private let itemTextLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 17)
+        label.font = FontScheme.shared.body
         label.numberOfLines = 3
 
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -51,8 +51,8 @@ final class TodoItemCell: UITableViewCell {
 
     private let deadlineLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13)
-        label.textColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+        label.font = FontScheme.shared.subhead
+        label.textColor = ColorScheme.shared.labelTertiary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -77,6 +77,7 @@ final class TodoItemCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
         self.accessoryType = UITableViewCell.AccessoryType.disclosureIndicator
+        self.contentView.backgroundColor = ColorScheme.shared.backSecondary
 
         self.contentView.addSubview(self.doneButton)
         self.doneButton.addTarget(self, action: #selector(doneButtonClicked(_:)), for: .touchUpInside)
@@ -174,13 +175,13 @@ final class TodoItemCell: UITableViewCell {
 
         let attributeString: NSMutableAttributedString = NSMutableAttributedString(string: viewModel.text)
         self.itemTextLabel.attributedText = attributeString
-        self.itemTextLabel.textColor = .black
+        self.itemTextLabel.textColor = ColorScheme.shared.labelPrimary
 
         if viewModel.isDone {
             self.doneButton.setBackgroundImage(UIImage(named: "Cell Done"), for: .normal)
             attributeString.addAttribute(NSAttributedString.Key.strikethroughStyle, value: 1, range: NSRange(location: 0, length: attributeString.length))
             self.itemTextLabel.attributedText = attributeString
-            self.itemTextLabel.textColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+            self.itemTextLabel.textColor = ColorScheme.shared.labelTertiary
         } else {
             if deadlineIsMissed {
                 self.doneButton.setBackgroundImage(UIImage(named: "Cell Deadline"), for: .normal)

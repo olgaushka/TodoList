@@ -54,7 +54,7 @@ class TodoItemViewController: UIViewController {
 
 
 
-        view.backgroundColor = UIColor(red: 0.97, green: 0.966, blue: 0.951, alpha: 1)
+        view.backgroundColor = ColorScheme.shared.backPrimary
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([

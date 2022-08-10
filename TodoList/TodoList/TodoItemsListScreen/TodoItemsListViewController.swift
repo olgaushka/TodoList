@@ -11,14 +11,14 @@ import UIKit
 final class TodoItemsListViewController: UIViewController {
     private let completedLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 15)
-        label.textColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+        label.font = FontScheme.shared.subhead
+        label.textColor = ColorScheme.shared.labelTertiary
         return label
     }()
     private let showAllButton: UIButton = {
          let button = UIButton()
-        button.setTitleColor(UIColor(red: 0, green: 0.478, blue: 1, alpha: 1), for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 15)
+        button.setTitleColor(ColorScheme.shared.blue, for: .normal)
+        button.titleLabel?.font = FontScheme.shared.subheadline
         button.contentEdgeInsets = UIEdgeInsets(top: .leastNormalMagnitude, left: .leastNormalMagnitude, bottom: .leastNormalMagnitude, right: .leastNormalMagnitude)
         return button
     }()
@@ -62,7 +62,7 @@ final class TodoItemsListViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
 
-        view.backgroundColor = UIColor(red: 0.97, green: 0.966, blue: 0.951, alpha: 1)
+        view.backgroundColor = ColorScheme.shared.backPrimary
 
         self.view.addSubview(self.completedLabel)
         self.completedLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -105,6 +105,7 @@ final class TodoItemsListViewController: UIViewController {
         ])
         itemsTableView.layer.cornerRadius = 16
         itemsTableView.separatorInset.left = 52
+        itemsTableView.separatorColor = ColorScheme.shared.separator
         itemsTableView.estimatedSectionFooterHeight = 56
 
         setupNavigationBar()
@@ -276,7 +277,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
             completionHandler(true)
         }
 
-        action.backgroundColor = UIColor(red: 0.2, green: 0.84, blue: 0.29, alpha: 1.0)
+        action.backgroundColor = ColorScheme.shared.green
         action.image = UIImage(named: "Action Check")
         return UISwipeActionsConfiguration(actions: [action])
     }
@@ -288,7 +289,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
             self.didTapInfo(viewModel: viewModel)
             completionHandler(true)
         }
-        info.backgroundColor = UIColor(red: 0.82, green: 0.82, blue: 0.839, alpha: 1)
+        info.backgroundColor = ColorScheme.shared.grayLight
         info.image = UIImage(named: "Action Info")
 
         // Trash action
@@ -297,7 +298,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
             self?.didTapDelete(viewModel: viewModel)
             completionHandler(true)
         }
-        trash.backgroundColor = UIColor(red: 1, green: 0.231, blue: 0.188, alpha: 1)
+        trash.backgroundColor = ColorScheme.shared.red
         trash.image = UIImage(named: "Action Trash")
 
         let configuration = UISwipeActionsConfiguration(actions: [trash, info])

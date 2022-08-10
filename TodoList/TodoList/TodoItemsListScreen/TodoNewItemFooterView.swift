@@ -17,7 +17,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
     
     private let newItemTextField: UITextField = {
         let textField = UITextField()
-        textField.font = .systemFont(ofSize: 17)
+        textField.font = FontScheme.shared.body
         textField.placeholder = "Новое"
         textField.returnKeyType = UIReturnKeyType.done
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -26,7 +26,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
     private let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = .separator
+        view.backgroundColor = ColorScheme.shared.separator
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -38,7 +38,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
         self.newItemTextField.delegate = self
 
-        self.contentView.backgroundColor = .white
+        self.contentView.backgroundColor = ColorScheme.shared.backSecondary
         self.contentView.addSubview(self.newItemTextField)
         self.contentView.addSubview(self.separatorView)
         NSLayoutConstraint.activate([
@@ -62,7 +62,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
     private func updateView() {
         let viewModel = self.viewModel
-        self.separatorView.backgroundColor = viewModel.isSeparatorHidden ? .white : .separator
+        self.separatorView.backgroundColor = viewModel.isSeparatorHidden ? self.contentView.backgroundColor : ColorScheme.shared.separator
         self.newItemTextField.text = viewModel.text
     }
 }
