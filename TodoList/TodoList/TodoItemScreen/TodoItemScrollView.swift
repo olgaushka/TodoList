@@ -57,8 +57,14 @@ final class TodoItemScrollView: UIScrollView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let test = UIDevice.current.orientation.isLandscape
-        if UIDevice.current.orientation.isLandscape {
+        let isLandscape: Bool
+        if #available(iOS 13.0, *) {
+            isLandscape = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation.isLandscape ?? false
+        } else {
+            isLandscape = UIApplication.shared.statusBarOrientation.isLandscape
+        }
+
+        if isLandscape {
             print(self.bounds)
             textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: self.bounds.height)
             self.containerView.isHidden = true

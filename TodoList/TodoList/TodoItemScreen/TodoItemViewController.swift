@@ -26,7 +26,6 @@ class TodoItemViewController: UIViewController {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardDidShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardDidHideNotification, object: nil)
     }
@@ -34,7 +33,6 @@ class TodoItemViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(rotated), name: UIDevice.orientationDidChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: UIResponder.keyboardDidShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidHide), name: UIResponder.keyboardDidHideNotification, object: nil)
 
@@ -69,6 +67,11 @@ class TodoItemViewController: UIViewController {
         setupNavigationBar()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        self.scrollView.setNeedsLayout()
+        self.scrollView.layoutIfNeeded()
+    }
+
     private func setupNavigationBar() {
         self.navigationItem.title = "Дело"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(done))
@@ -81,17 +84,6 @@ class TodoItemViewController: UIViewController {
     @objc
     private func hideKeyboard() {
         view.endEditing(true)
-    }
-
-    @objc
-    private func rotated() {
-        self.scrollView.setNeedsLayout()
-        self.scrollView.layoutIfNeeded()
-        if UIDevice.current.orientation.isLandscape {
-            print("Landscape")
-        } else {
-            print("Portrait")
-        }
     }
 
     @objc
