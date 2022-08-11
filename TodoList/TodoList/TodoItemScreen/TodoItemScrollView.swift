@@ -15,26 +15,52 @@ final class TodoItemScrollView: UIScrollView {
         }
     }
 
-    private let textView: UITextView
+    private enum Consts {
+        static let dateFormat: String = "d MMMM yyyy"
+        static let oneDay: TimeInterval = 24 * 60 * 60
+        static let cornerRadius: CGFloat = 16
+        static let itemTextViewHeight: CGFloat = 120
+        static let itemTextViewInsets: UIEdgeInsets = .init(top: 16, left: 16, bottom: 0, right: 16)
+        static let itemTextViewInnerInsets: UIEdgeInsets = .init(top: 16, left: 16, bottom: 16, right: 16)
+        static let containerViewInsets: UIEdgeInsets = .init(top: 16, left: 16, bottom: 0, right: 16)
+        static let importanceLabelInsets: UIEdgeInsets = .init(top: 16, left: 17, bottom: 0, right: 0)
+        static let importanceSegmentedControlInsets: UIEdgeInsets = .init(top: 10, left: 0, bottom: 0, right: 12)
+        static let importanceSegmentedControlSize: CGSize = .init(width: 150, height: 36)
+        static let dividerViewInsets: UIEdgeInsets = .init(top: 56, left: 16, bottom: 0, right: 16)
+        static let dividerViewHeight: CGFloat = 1
+        static let deadlineLabelInsets: UIEdgeInsets = .init(top: 17, left: 16, bottom: 26, right: 0)
+        static let deadlineSwitchInsets: UIEdgeInsets = .init(top: 12, left: 0, bottom: 0, right: 12)
+        static let deadlineButtonInsets: UIEdgeInsets = .init(top: 4, left: 16, bottom: 0, right: 0)
+        static let datePickerInsets: UIEdgeInsets = .init(top: 9, left: 16, bottom: 0, right: 16)
+        static let deleteButtonInsets: UIEdgeInsets = .init(top: 16, left: 16, bottom: 0, right: 16)
+        static let deleteButtonHeight: CGFloat = 56
+
+    }
+
+    private lazy var dateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = Consts.dateFormat
+        return dateFormatter
+    }()
+
+    private let itemTextView: UITextView
     private let containerView: UIView
     private let importanceLabel: UILabel
     private let dividerView: UIView
     private let deadlineLabel: UILabel
-    private let segmentedControl: UISegmentedControl
+    private let importanceSegmentedControl: UISegmentedControl
     private let deadlineSwitch: UISwitch
     private let deadlineButton: UIButton
     private let datePicker: UIDatePicker
     private let deleteButton: UIButton
 
-    private lazy var dateFormatter: DateFormatter = DateFormatter()
-
     override init(frame: CGRect) {
         self.viewModel = TodoItemScrollViewModel.makeDefault()
         
-        self.textView = Self.makeTextView()
+        self.itemTextView = Self.makeItemTextView()
         self.containerView = Self.makeContainerView()
         self.importanceLabel = Self.makeImportanceLabel()
-        self.segmentedControl = Self.makeSegmentedControl()
+        self.importanceSegmentedControl = Self.makeSegmentedControl()
         self.dividerView = Self.makeDividerView()
         self.deadlineLabel = Self.makeDeadlineLabel()
         self.deadlineSwitch = Self.makeDeadlineSwitch()
@@ -44,7 +70,6 @@ final class TodoItemScrollView: UIScrollView {
 
         super.init(frame: frame)
 
-        self.dateFormatter.dateFormat = "d MMMM yyyy"
         self.setupSubviews()
         self.updateView()
 
@@ -65,79 +90,70 @@ final class TodoItemScrollView: UIScrollView {
         }
 
         if isLandscape {
-            print(self.bounds)
-            textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: self.bounds.height)
+            let itemTextViewWidth = self.bounds.width - Consts.itemTextViewInsets.left - Consts.itemTextViewInsets.right
+            self.itemTextView.frame = .init(x: Consts.itemTextViewInsets.left, y: Consts.itemTextViewInsets.top, width: itemTextViewWidth, height: self.bounds.height)
             self.containerView.isHidden = true
             self.deleteButton.isHidden = true
-
         } else {
 
             self.containerView.isHidden = false
             self.deleteButton.isHidden = false
 
-            let textViewHeight = Consts.textViewHeight
+            let itemTextViewWidth = self.bounds.width - Consts.itemTextViewInsets.left - Consts.itemTextViewInsets.right
+            let itemTextViewHeight = Consts.itemTextViewHeight
 
-            textView.frame = .init(x: 16, y: 16, width: self.bounds.width - 32, height: textViewHeight)
-            var lastElementBottom = textView.frame.maxY
+            self.itemTextView.frame = .init(x: Consts.itemTextViewInsets.left, y: Consts.itemTextViewInsets.top, width: itemTextViewWidth, height: itemTextViewHeight)
 
-            self.containerView.frame.origin = .init(x: 16, y: lastElementBottom + 16)
-
-
-            importanceLabel.sizeToFit()
-            importanceLabel.frame.origin = .init(x: 16, y: 17)
-
-            self.segmentedControl.frame.size = .init(width: 150, height: 36)
-            self.segmentedControl.frame.origin = .init(x: containerView.bounds.width - 12 - segmentedControl.frame.width, y: 10)
-
-            self.dividerView.frame = .init(x: 0, y: 56, width: containerView.bounds.width, height: 1)
-
-            deadlineLabel.sizeToFit()
-            deadlineLabel.frame.origin = .init(x: 16,
-                                               y: dividerView.frame.maxY + 17)
-            deadlineSwitch.sizeToFit()
-            deadlineSwitch.frame.origin = .init(x: containerView.bounds.width - 12 - deadlineSwitch.frame.width,
-                                               y: dividerView.frame.maxY + 12)
-            deadlineButton.sizeToFit()
-            deadlineButton.frame.origin = .init(x: 16,
-                                               y: deadlineLabel.frame.maxY + 4)
+            self.containerView.frame.origin = .init(x: Consts.containerViewInsets.left, y: self.itemTextView.frame.maxY + Consts.containerViewInsets.top)
 
 
-            datePicker.sizeToFit()
-            let ratio = datePicker.frame.size.height / datePicker.frame.size.width
-            let datePickerSize = CGSize.init(width: self.containerView.bounds.width, height: self.containerView.bounds.width * ratio)
+            self.importanceLabel.sizeToFit()
+            self.importanceLabel.frame.origin = .init(x: Consts.importanceLabelInsets.left, y: Consts.importanceLabelInsets.top)
+
+            self.importanceSegmentedControl.frame.size = .init(width: Consts.importanceSegmentedControlSize.width, height: Consts.importanceSegmentedControlSize.height)
+            self.importanceSegmentedControl.frame.origin = .init(x: self.containerView.bounds.width - Consts.importanceSegmentedControlInsets.right - self.importanceSegmentedControl.bounds.width, y: Consts.importanceSegmentedControlInsets.top)
+
+            self.dividerView.frame = .init(x: Consts.dividerViewInsets.left, y: Consts.dividerViewInsets.top, width: containerView.bounds.width - Consts.dividerViewInsets.left - Consts.dividerViewInsets.right, height: Consts.dividerViewHeight)
+
+            self.deadlineLabel.sizeToFit()
+            self.deadlineLabel.frame.origin = .init(x: Consts.deadlineLabelInsets.left,
+                                                    y: self.dividerView.frame.maxY + Consts.deadlineLabelInsets.top)
+            self.deadlineSwitch.sizeToFit()
+            self.deadlineSwitch.frame.origin = .init(x: self.containerView.bounds.width - Consts.deadlineSwitchInsets.right - self.deadlineSwitch.frame.width,
+                                                     y: self.dividerView.frame.maxY + Consts.deadlineSwitchInsets.top)
+            self.deadlineButton.sizeToFit()
+            self.deadlineButton.frame.origin = .init(x: Consts.deadlineButtonInsets.left,
+                                                     y: self.deadlineLabel.frame.maxY + Consts.deadlineButtonInsets.top)
+
+
+            let datePickerWidth = self.bounds.width - Consts.datePickerInsets.left - Consts.datePickerInsets.right
+            let datePickerHeight = self.datePicker.sizeThatFits(.init(width: datePickerWidth, height: .greatestFiniteMagnitude)).height
             self.datePicker.frame = .init(
-                origin: .init(x: 0, y: deadlineButton.frame.maxY + 9),
-                size: datePickerSize
+                origin: .init(x: 0, y: deadlineButton.frame.maxY + Consts.datePickerInsets.top),
+                size: .init(width: datePickerWidth, height: datePickerHeight)
             )
 
-            let containerViewLastElementBottom: CGFloat
+            let containerViewLastElementMaxY: CGFloat
             if self.datePicker.isHidden {
-                containerViewLastElementBottom = self.deadlineLabel.frame.maxY + 26
+                containerViewLastElementMaxY = self.deadlineLabel.frame.maxY + Consts.deadlineLabelInsets.bottom
             } else {
-                containerViewLastElementBottom = self.datePicker.frame.maxY
+                containerViewLastElementMaxY = self.datePicker.frame.maxY
             }
 
-            self.containerView.frame.size = .init(width: self.bounds.width - 32, height: containerViewLastElementBottom)
+            self.containerView.frame.size = .init(width: self.bounds.width - Consts.containerViewInsets.left - Consts.containerViewInsets.right, height: containerViewLastElementMaxY)
 
-            lastElementBottom = self.containerView.frame.maxY
+            self.deleteButton.frame.size = .init(width: self.bounds.width - Consts.deleteButtonInsets.left - Consts.deleteButtonInsets.right, height: Consts.deleteButtonHeight)
+            self.deleteButton.frame.origin = .init(x: Consts.deleteButtonInsets.left, y: self.containerView.frame.maxY + Consts.deleteButtonInsets.top)
 
-            deleteButton.frame.size = .init(width: self.bounds.width - 32, height: 56)
-            deleteButton.frame.origin = .init(x: 16, y: lastElementBottom + 16)
-            lastElementBottom = deleteButton.frame.maxY
-
-            self.contentSize = .init(width: self.bounds.width, height: lastElementBottom)
+            self.contentSize = .init(width: self.bounds.width, height: self.deleteButton.frame.maxY)
         }
     }
 
-    private enum Consts {
-        static let textViewHeight: CGFloat = 120
-    }
-
-    private static func makeTextView() -> UITextView {
+    private static func makeItemTextView() -> UITextView {
         let textView = UITextView(frame: .zero)
         textView.font = FontScheme.shared.body
-        textView.textContainerInset = .init(top: 16, left: 17, bottom: 17, right: 16)
-        textView.layer.cornerRadius = 16
+        textView.textContainerInset = .init(top: Consts.itemTextViewInnerInsets.top, left: Consts.itemTextViewInnerInsets.left, bottom: Consts.itemTextViewInnerInsets.bottom, right: Consts.itemTextViewInnerInsets.right)
+        textView.layer.cornerRadius = Consts.cornerRadius
 //        textView.text = "Что надо сделать?"
 //        textView.textColor = UIColor.lightGray
         return textView
@@ -209,23 +225,23 @@ final class TodoItemScrollView: UIScrollView {
         button.setTitleColor(ColorScheme.shared.labelTertiary, for: .disabled)
         button.titleLabel?.font = FontScheme.shared.body
         button.backgroundColor = ColorScheme.shared.backSecondary
-        button.layer.cornerRadius = 16
+        button.layer.cornerRadius = Consts.cornerRadius
 
         return button
     }
 
     private func setupSubviews() {
-        addSubview(self.textView)
-        textView.delegate = self
+        addSubview(self.itemTextView)
+        self.itemTextView.delegate = self
 
         addSubview(self.containerView)
         self.containerView.addSubview(self.importanceLabel)
-        self.containerView.addSubview(self.segmentedControl)
-        self.segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+        self.containerView.addSubview(self.importanceSegmentedControl)
+        self.importanceSegmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         self.containerView.addSubview(self.dividerView)
         self.containerView.addSubview(self.deadlineLabel)
         self.containerView.addSubview(self.deadlineSwitch)
-        deadlineSwitch.addTarget(self, action: #selector(switchValueDidChange(_:)), for: .valueChanged)
+        self.deadlineSwitch.addTarget(self, action: #selector(switchValueDidChange(_:)), for: .valueChanged)
         self.containerView.addSubview(self.deadlineButton)
         self.deadlineButton.addTarget(self, action: #selector(deadlineButtonClicked(_:)), for: .touchUpInside)
 
@@ -239,7 +255,7 @@ final class TodoItemScrollView: UIScrollView {
     private func updateView() {
         let viewModel = self.viewModel
 
-        self.textView.text = viewModel.text
+        self.itemTextView.text = viewModel.text
 
         let selectedSegmentIndex: Int
         switch viewModel.importance {
@@ -250,7 +266,7 @@ final class TodoItemScrollView: UIScrollView {
         case .high:
             selectedSegmentIndex = 2
         }
-        self.segmentedControl.selectedSegmentIndex = selectedSegmentIndex
+        self.importanceSegmentedControl.selectedSegmentIndex = selectedSegmentIndex
 
         if let deadline = viewModel.deadline {
             self.deadlineSwitch.setOn(true, animated: true)
@@ -268,14 +284,12 @@ final class TodoItemScrollView: UIScrollView {
     @objc
     private func switchValueDidChange(_ sender: UISwitch) {
         if sender.isOn {
-            print("on")
-            let tomorrow = Date(timeIntervalSinceNow: 24 * 60 * 60)
+            let tomorrow = Date(timeIntervalSinceNow: Consts.oneDay)
             self.viewModel.deadline = tomorrow
             self.deadlineButton.setTitle(self.dateFormatter.string(from: tomorrow), for: .normal)
             self.datePicker.date = tomorrow
             self.deadlineButton.isHidden = false
         } else {
-            print("off")
             self.deadlineButton.isHidden = true
             self.datePicker.isHidden = true
             self.viewModel.deadline = nil
@@ -295,7 +309,7 @@ final class TodoItemScrollView: UIScrollView {
     @objc
     private func segmentedControlValueChanged(_ segmentedControl: UISegmentedControl) {
         let importance: Importance
-        switch self.segmentedControl.selectedSegmentIndex  {
+        switch self.importanceSegmentedControl.selectedSegmentIndex  {
         case 0:
             importance = .low
         case 1:

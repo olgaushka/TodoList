@@ -9,16 +9,18 @@
 import UIKit
 
 class TodoItemViewController: UIViewController {
-    private let scrollView: TodoItemScrollView = .init(frame: .zero)
-    private var tapGesture: UITapGestureRecognizer = UITapGestureRecognizer()
-    weak var delegate: TodoItemViewControllerDelegate?
     var item: TodoItem = TodoItem(text: "")
-
+    weak var delegate: TodoItemViewControllerDelegate?
     private let dependencies: Dependencies
+    private let itemScrollView: TodoItemScrollView = .init(frame: .zero)
+    private var tapGesture: UITapGestureRecognizer = UITapGestureRecognizer()
 
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: UIResponder.keyboardDidShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidHide), name: UIResponder.keyboardDidHideNotification, object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -33,9 +35,6 @@ class TodoItemViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: UIResponder.keyboardDidShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidHide), name: UIResponder.keyboardDidHideNotification, object: nil)
-
         let viewModel = TodoItemScrollViewModel(text: self.item.text, importance: self.item.importance, deadline: self.item.deadline)
         viewModel.didTapDelete = { [weak self] in
             guard let self = self else { return }
@@ -45,31 +44,29 @@ class TodoItemViewController: UIViewController {
             self.delegate?.todoItemViewControllerDidFinish(self)
             self.dismiss(animated: true)
         }
-        self.scrollView.viewModel = viewModel
+        self.itemScrollView.viewModel = viewModel
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
         tapGesture.isEnabled = false
         self.view.addGestureRecognizer(tapGesture)
         self.tapGesture = tapGesture
 
-
-
-        view.backgroundColor = ColorScheme.shared.backPrimary
-        view.addSubview(scrollView)
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.backgroundColor = ColorScheme.shared.backPrimary
+        self.view.addSubview(self.itemScrollView)
+        self.itemScrollView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            scrollView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+            self.itemScrollView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            self.itemScrollView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            self.itemScrollView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.itemScrollView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
         ])
 
         setupNavigationBar()
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        self.scrollView.setNeedsLayout()
-        self.scrollView.layoutIfNeeded()
+        self.itemScrollView.setNeedsLayout()
+        self.itemScrollView.layoutIfNeeded()
     }
 
     private func setupNavigationBar() {
@@ -100,7 +97,7 @@ class TodoItemViewController: UIViewController {
     private func done() {
         print("Сохранить")
 
-        let viewModel = self.scrollView.viewModel
+        let viewModel = self.itemScrollView.viewModel
         let dependencies = self.dependencies
         if let item = dependencies.fileCache.items.first(where: { $0.id == self.item.id }) {
             let changedItem = TodoItem(id: item.id, text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: item.isDone, createdAt: item.createdAt, modifiedAt: Date())
