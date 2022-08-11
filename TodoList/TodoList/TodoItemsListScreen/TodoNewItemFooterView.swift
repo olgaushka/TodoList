@@ -14,20 +14,24 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
             self.updateView()
         }
     }
+
+    private enum Consts {
+        static let separatorViewHeight: CGFloat = 1
+        static let newItemTextFieldHeight: CGFloat = 55
+        static let newItemTextFieldLeftInset: CGFloat = 52
+    }
     
     private let newItemTextField: UITextField = {
         let textField = UITextField()
         textField.font = FontScheme.shared.body
         textField.placeholder = "Новое"
         textField.returnKeyType = UIReturnKeyType.done
-        textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
     private let separatorView: UIView = {
         let view = UIView()
         view.backgroundColor = ColorScheme.shared.separator
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
 
@@ -41,18 +45,22 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
         self.contentView.backgroundColor = ColorScheme.shared.backSecondary
         self.contentView.addSubview(self.newItemTextField)
         self.contentView.addSubview(self.separatorView)
+
+        self.separatorView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             self.separatorView.leadingAnchor.constraint(equalTo: self.newItemTextField.leadingAnchor),
             self.separatorView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             self.separatorView.topAnchor.constraint( equalTo: self.contentView.topAnchor),
             self.separatorView.bottomAnchor.constraint(equalTo: self.newItemTextField.topAnchor),
-            self.separatorView.heightAnchor.constraint(equalToConstant: 0.5),
+            self.separatorView.heightAnchor.constraint(equalToConstant: Consts.separatorViewHeight),
         ])
+
+        self.newItemTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.newItemTextField.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 52),
+            self.newItemTextField.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Consts.newItemTextFieldLeftInset),
             self.newItemTextField.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             self.newItemTextField.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
-            self.newItemTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 55),
+            self.newItemTextField.heightAnchor.constraint(equalToConstant: Consts.newItemTextFieldHeight),
         ])
     }
 

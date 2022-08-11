@@ -9,6 +9,25 @@
 import UIKit
 
 final class TodoItemsListViewController: UIViewController {
+    private let dependencies: Dependencies
+    private var itemViewModels: [TodoItemCellViewModel] = []
+    private var showAll: Bool = true
+
+    private enum Consts {
+        static let cellReuseIdentifier: String = "itemCell"
+        static let footerReuseIdentifier: String = "footerCell"
+        static let cornerRadius: CGFloat = 16
+        static let leftSeparatorInset: CGFloat = 52
+        static let completedLabelInsets: UIEdgeInsets = .init(top: 8, left: 32, bottom: 0, right: 0)
+        static let showAllButtonInsets: UIEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 32)
+        static let addButtonInsets: UIEdgeInsets = .init(top: 0, left: 0, bottom: 20, right: 0)
+        static let itemsTableViewInsets: UIEdgeInsets = .init(top: 12, left: 16, bottom: 14, right: 16)
+        static let addButtonShadowRadius: CGFloat = 10
+        static let addButtonShadowOpacity: Float = 0.2
+        static let addButtonShadowOffsetSizeRatio: CGSize = CGSize(width: 0.0, height: 0.25)
+        static let estimatedItemsTableViewFooterHeight: CGFloat = 56
+    }
+
     private let completedLabel: UILabel = {
         let label = UILabel()
         label.font = FontScheme.shared.subhead
@@ -22,22 +41,12 @@ final class TodoItemsListViewController: UIViewController {
         button.contentEdgeInsets = UIEdgeInsets(top: .leastNormalMagnitude, left: .leastNormalMagnitude, bottom: .leastNormalMagnitude, right: .leastNormalMagnitude)
         return button
     }()
-
-    private let dependencies: Dependencies
-
     private let addButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "Button Add"), for: .normal)
         return button
     }()
-
-    private var itemViewModels: [TodoItemCellViewModel] = []
-    private var showAll: Bool = true
-
-
     private let itemsTableView: DynamicTableView = DynamicTableView(frame: .zero, style: .plain)
-//    private var tableSize: CGFloat = 0
-
     private var addButtonBottomConstraint: NSLayoutConstraint = {
         return NSLayoutConstraint()
     }()
@@ -45,6 +54,9 @@ final class TodoItemsListViewController: UIViewController {
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -59,16 +71,13 @@ final class TodoItemsListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-
-        view.backgroundColor = ColorScheme.shared.backPrimary
+        self.view.backgroundColor = ColorScheme.shared.backPrimary
 
         self.view.addSubview(self.completedLabel)
         self.completedLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.completedLabel.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
-            self.completedLabel.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            self.completedLabel.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: Consts.completedLabelInsets.left),
+            self.completedLabel.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: Consts.completedLabelInsets.top),
         ])
 
         self.view.addSubview(self.showAllButton)
@@ -76,48 +85,51 @@ final class TodoItemsListViewController: UIViewController {
         self.showAllButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             self.showAllButton.topAnchor.constraint(equalTo: self.completedLabel.topAnchor),
-            self.showAllButton.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
+            self.showAllButton.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -Consts.showAllButtonInsets.right),
         ])
-
-        self.updateViewModels()
 
         self.view.addSubview(self.addButton)
         self.addButton.addTarget(self, action: #selector(addButtonClicked(_:)), for: .touchUpInside)
         self.addButton.translatesAutoresizingMaskIntoConstraints = false
-        self.addButtonBottomConstraint = self.addButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        self.addButtonBottomConstraint = self.addButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -Consts.addButtonInsets.bottom)
         NSLayoutConstraint.activate([
             self.addButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             self.addButtonBottomConstraint
         ])
 
-        itemsTableView.dataSource = self
-        itemsTableView.delegate = self
-        itemsTableView.register(TodoItemCell.self, forCellReuseIdentifier: "itemCell")
-        itemsTableView.register(TodoNewItemFooterView.self, forHeaderFooterViewReuseIdentifier: "footerCell")
+        self.itemsTableView.dataSource = self
+        self.itemsTableView.delegate = self
+        self.itemsTableView.register(TodoItemCell.self, forCellReuseIdentifier: Consts.cellReuseIdentifier)
+        self.itemsTableView.register(TodoNewItemFooterView.self, forHeaderFooterViewReuseIdentifier: Consts.footerReuseIdentifier)
+        self.itemsTableView.estimatedSectionFooterHeight = Consts.estimatedItemsTableViewFooterHeight
+        self.itemsTableView.layer.cornerRadius = Consts.cornerRadius
+        self.itemsTableView.separatorInset.left = Consts.leftSeparatorInset
+        self.itemsTableView.separatorColor = ColorScheme.shared.separator
         self.view.addSubview(self.itemsTableView)
         self.itemsTableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            itemsTableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            itemsTableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            itemsTableView.topAnchor.constraint(equalTo: self.completedLabel.bottomAnchor, constant: 12),
-            itemsTableView.bottomAnchor.constraint(lessThanOrEqualTo: self.addButton.topAnchor, constant:-14),
-
+            self.itemsTableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: Consts.itemsTableViewInsets.left),
+            self.itemsTableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -Consts.itemsTableViewInsets.right),
+            self.itemsTableView.topAnchor.constraint(equalTo: self.completedLabel.bottomAnchor, constant: Consts.itemsTableViewInsets.top),
+            self.itemsTableView.bottomAnchor.constraint(lessThanOrEqualTo: self.addButton.topAnchor, constant:-Consts.itemsTableViewInsets.bottom),
         ])
-        itemsTableView.layer.cornerRadius = 16
-        itemsTableView.separatorInset.left = 52
-        itemsTableView.separatorColor = ColorScheme.shared.separator
-        itemsTableView.estimatedSectionFooterHeight = 56
 
-        setupNavigationBar()
+        self.updateViewModels()
+        self.setupNavigationBar()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         self.addButton.layer.shadowPath = UIBezierPath(ovalIn: self.addButton.bounds).cgPath
-        self.addButton.layer.shadowRadius = 10
-        self.addButton.layer.shadowOpacity = 0.2
-        self.addButton.layer.shadowOffset = CGSize(width: 0, height: self.addButton.bounds.height/4)
+        self.addButton.layer.shadowRadius = Consts.addButtonShadowRadius
+        self.addButton.layer.shadowOpacity = Consts.addButtonShadowOpacity
+        self.addButton.layer.shadowOffset = CGSize(width: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.width, height: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.height)
+    }
+
+    func updateData() {
+        self.updateViewModels()
+        self.itemsTableView.reloadData()
     }
 
     private func setupNavigationBar() {
@@ -178,11 +190,6 @@ final class TodoItemsListViewController: UIViewController {
         self.updateData()
     }
 
-    func updateData() {
-        self.updateViewModels()
-        self.itemsTableView.reloadData()
-    }
-
     @objc
     private func showAllButtonClicked(_ button: UIButton) {
         self.showAll = !self.showAll
@@ -205,13 +212,12 @@ final class TodoItemsListViewController: UIViewController {
         } else {
             keyboardHeight = keyboardFrame.cgRectValue.height
         }
-
-        addButtonBottomConstraint.constant = -20 - keyboardHeight
+        self.addButtonBottomConstraint.constant = -Consts.addButtonInsets.bottom - keyboardHeight
     }
 
     @objc
     func keyboardWillDisappear(notification: NSNotification?) {
-        addButtonBottomConstraint.constant = -20
+        self.addButtonBottomConstraint.constant = -Consts.addButtonInsets.bottom
     }
 }
 
@@ -222,7 +228,7 @@ extension TodoItemsListViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let tableViewCell = tableView.dequeueReusableCell(withIdentifier: "itemCell", for: indexPath)
+        let tableViewCell = tableView.dequeueReusableCell(withIdentifier: Consts.cellReuseIdentifier, for: indexPath)
         guard let cell = tableViewCell as? TodoItemCell else { return tableViewCell }
         let viewModel = self.itemViewModels[indexPath.row]
         viewModel.didTapDone = { [weak self] in
@@ -234,7 +240,7 @@ extension TodoItemsListViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let footer = tableView.dequeueReusableHeaderFooterView(withIdentifier: "footerCell")
+        let footer = tableView.dequeueReusableHeaderFooterView(withIdentifier: Consts.footerReuseIdentifier)
         guard let footerView = footer as? TodoNewItemFooterView else { return nil }
         let footerViewModel: TodoNewItemFooterViewModel
         if self.itemViewModels.count == 0 {
@@ -295,7 +301,8 @@ extension TodoItemsListViewController: UITableViewDelegate {
         // Trash action
         let trash = UIContextualAction(style: .destructive,
                                        title: nil) { [weak self] (action, view, completionHandler) in
-            self?.didTapDelete(viewModel: viewModel)
+            guard let self = self else { return }
+            self.didTapDelete(viewModel: viewModel)
             completionHandler(true)
         }
         trash.backgroundColor = ColorScheme.shared.red
@@ -322,13 +329,13 @@ class DynamicTableView: UITableView {
     /// Will asign the value of this variable to estimated row height.
     var dynamicRowHeight: CGFloat = UITableView.automaticDimension {
         didSet {
-            rowHeight = UITableView.automaticDimension
-            estimatedRowHeight = dynamicRowHeight
+            self.rowHeight = UITableView.automaticDimension
+            self.estimatedRowHeight = self.dynamicRowHeight
         }
     }
 
     public override var intrinsicContentSize: CGSize {
-        return contentSize
+        return self.contentSize
     }
 
     public override func layoutSubviews() {
@@ -338,5 +345,3 @@ class DynamicTableView: UITableView {
         }
     }
 }
-
-
