@@ -9,6 +9,7 @@
 // swiftlint:disable file_length
 
 import UIKit
+import CocoaLumberjack
 import TodoListModels
 import TodoListResources
 
@@ -165,8 +166,8 @@ final class TodoItemsListViewController: UIViewController {
             ),
         ])
 
-        self.updateViewModels()
         self.setupNavigationBar()
+        self.loadData()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -181,21 +182,37 @@ final class TodoItemsListViewController: UIViewController {
         )
     }
 
-    func updateData() {
-        self.updateViewModels()
-        self.itemsTableView.reloadData()
-    }
-
     private func setupNavigationBar() {
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "Мои дела"
         self.navigationController?.navigationBar.isTranslucent = true
     }
 
+    private func loadData() {
+        self.dependencies.fileCacheService.load(from: self.dependencies.fileName) { [weak self] result in
+            switch result {
+            case .success:
+                self?.updateViewModels()
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+            }
+        }
+    }
+
+    private func saveData() {
+        self.dependencies.fileCacheService.save(to: self.dependencies.fileName) { [weak self] result in
+            switch result {
+            case .success:
+                DDLogInfo("Save success")
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+                self?.loadData()
+            }
+        }
+    }
+
     private func updateViewModels() {
-        let dependencies = self.dependencies
-        dependencies.fileCache.load(from: dependencies.fileName)
-        let allItems = dependencies.fileCache.items
+        let allItems = self.dependencies.fileCacheService.items
         let notCompletedItems = allItems.filter({ !$0.isDone })
         self.completedLabel.text = "Выполнено — \(allItems.count - notCompletedItems.count)"
         let items: [TodoItem]
@@ -216,11 +233,12 @@ final class TodoItemsListViewController: UIViewController {
             )
             return viewModel
         })
+        self.itemsTableView.reloadData()
     }
 
     private func didTapInfo(viewModel: TodoItemCellViewModel?) {
         let todoItemViewController = TodoItemViewController(dependencies: self.dependencies)
-        if let item = self.dependencies.fileCache.items.first(where: { $0.id == viewModel?.id }) {
+        if let item = self.dependencies.fileCacheService.items.first(where: { $0.id == viewModel?.id }) {
             todoItemViewController.item = item
         }
         todoItemViewController.delegate = self
@@ -229,25 +247,24 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapDelete(viewModel: TodoItemCellViewModel) {
-        let dependencies = self.dependencies
-        dependencies.fileCache.removeBy(id: viewModel.id)
-        dependencies.fileCache.save(to: dependencies.fileName)
-        self.updateData()
+        self.dependencies.fileCacheService.delete(id: viewModel.id)
+        self.saveData()
+        self.updateViewModels()
     }
 
     private func didTapDone(viewModel: TodoItemCellViewModel) {
         let dependencies = self.dependencies
-        guard let item = dependencies.fileCache.items.first(where: { $0.id == viewModel.id }) else { return }
+        guard let item = dependencies.fileCacheService.items.first(where: { $0.id == viewModel.id }) else { return }
         let changedItem = item.toggleCompleted()
-        dependencies.fileCache.modify(item: changedItem)
-        dependencies.fileCache.save(to: dependencies.fileName)
-        self.updateData()
+        self.dependencies.fileCacheService.modify(changedItem)
+        self.saveData()
+        self.updateViewModels()
     }
 
     @objc
     private func showAllButtonClicked(_ button: UIButton) {
         self.showAll = !self.showAll
-        self.updateData()
+        self.updateViewModels()
     }
 
     @objc
@@ -306,10 +323,9 @@ extension TodoItemsListViewController: UITableViewDataSource {
             guard let self = self else { return }
 
             let newItem = TodoItem(text: footerViewModel.text)
-            let dependencies = self.dependencies
-            dependencies.fileCache.add(item: newItem)
-            dependencies.fileCache.save(to: dependencies.fileName)
-            self.updateData()
+            self.dependencies.fileCacheService.add(newItem)
+            self.saveData()
+            self.updateViewModels()
             UIView.setAnimationsEnabled(false)
             self.itemsTableView.reloadSections(IndexSet(integer: 0), with: UITableView.RowAnimation.none)
             UIView.setAnimationsEnabled(true)
@@ -380,7 +396,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
 
 extension TodoItemsListViewController: TodoItemViewControllerDelegate {
     func todoItemViewControllerDidFinish(_ viewController: TodoItemViewController) {
-        self.updateData()
+        self.updateViewModels()
     }
 }
 
