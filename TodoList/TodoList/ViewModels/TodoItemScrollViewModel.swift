@@ -21,7 +21,7 @@ final class TodoItemScrollViewModel {
         self.deadline = deadline
     }
 
-    static func makeDefault() -> TodoItemScrollViewModel{
+    static func makeDefault() -> TodoItemScrollViewModel {
         let viewModel = TodoItemScrollViewModel(text: "", importance: Importance.medium)
         return viewModel
     }

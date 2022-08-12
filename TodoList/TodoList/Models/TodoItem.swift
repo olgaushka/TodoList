@@ -23,7 +23,7 @@ struct TodoItem {
     let createdAt: Date
     let modifiedAt: Date?
 
-    init(id: String = UUID().uuidString, text: String, importance: Importance, deadline: Date? = nil, isDone: Bool, createdAt: Date, modifiedAt: Date? = nil) {
+    init(id: String = UUID().uuidString, text: String, importance: Importance = .medium, deadline: Date? = nil, isDone: Bool = false, createdAt: Date = Date(), modifiedAt: Date? = nil) {
         self.id = id
         self.text = text
         self.importance = importance
@@ -32,4 +32,10 @@ struct TodoItem {
         self.createdAt = createdAt
         self.modifiedAt = modifiedAt
     }
+}
+
+extension TodoItem {
+    func toggleCompleted() -> TodoItem {
+        TodoItem(id: self.id, text: self.text, importance: self.importance, deadline: self.deadline, isDone: !self.isDone, createdAt: self.createdAt, modifiedAt: self.modifiedAt)
+  }
 }

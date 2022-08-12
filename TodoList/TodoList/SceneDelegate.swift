@@ -22,8 +22,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
 
-            let todoItemViewController = TodoItemViewController()
-            let navigationController = UINavigationController.init(rootViewController: todoItemViewController)
+            let dependencies: Dependencies = Dependencies(fileCache: FileCache(), fileName: "test.json")
+            let todoItemsListViewController = TodoItemsListViewController(dependencies: dependencies)
+
+            let navigationController = UINavigationController.init(rootViewController: todoItemsListViewController)
             window.rootViewController = navigationController
 
             self.window = window
