@@ -17,7 +17,7 @@ enum FileCacheServiceSaveError: Error {
     case unknown
 }
 
-class MockFileCacheService: FileCacheService {
+final class MockFileCacheService: FileCacheService {
     private(set) var items: [TodoItem] = []
     private let fileCache: FileCache = {
         let fileCache = FileCache()
