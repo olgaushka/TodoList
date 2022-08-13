@@ -396,6 +396,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
 
 extension TodoItemsListViewController: TodoItemViewControllerDelegate {
     func todoItemViewControllerDidFinish(_ viewController: TodoItemViewController) {
+        self.dismiss(animated: true)
         self.updateViewModels()
     }
 }

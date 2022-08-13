@@ -115,7 +115,6 @@ class TodoItemViewController: UIViewController {
             switch result {
             case .success:
                 self.delegate?.todoItemViewControllerDidFinish(self)
-                self.dismiss(animated: true)
             case .failure(let error):
                 DDLogError(error.localizedDescription)
             }
