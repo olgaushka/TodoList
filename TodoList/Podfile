@@ -3,10 +3,9 @@ source 'https://cdn.cocoapods.org/'
 platform :ios, '13.0'
 
 target 'TodoList' do
-  # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for TodoList
+  pod 'CocoaLumberjack/Swift', '~> 3.7.4'
 
   target 'TodoListTests' do
     inherit! :search_paths
