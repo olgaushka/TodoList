@@ -6,6 +6,7 @@ target 'TodoList' do
   use_frameworks!
 
   pod 'CocoaLumberjack/Swift', '~> 3.7.4'
+  pod 'SwiftLint', '~> 0.48.0'
 
   target 'TodoListTests' do
     inherit! :search_paths
