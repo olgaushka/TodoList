@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CocoaLumberjack
 
 class TodoItemViewController: UIViewController {
     var item: TodoItem = TodoItem(text: "")
@@ -117,7 +118,7 @@ class TodoItemViewController: UIViewController {
 
     @objc
     private func done() {
-        print("Сохранить")
+        DDLogInfo("Сохранить")
 
         let viewModel = self.itemScrollView.viewModel
         let dependencies = self.dependencies
@@ -149,7 +150,7 @@ class TodoItemViewController: UIViewController {
 
     @objc
     private func cancel() {
-        print("Отменить")
+        DDLogInfo("Отменить")
         self.dismiss(animated: true)
     }
 }
