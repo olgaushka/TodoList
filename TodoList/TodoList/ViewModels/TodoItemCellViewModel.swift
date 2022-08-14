@@ -29,6 +29,4 @@ final class TodoItemCellViewModel {
         let viewModel = TodoItemCellViewModel(id: "", text: "")
         return viewModel
     }
-
 }
-

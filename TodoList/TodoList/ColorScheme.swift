@@ -57,7 +57,7 @@ final class ColorScheme {
         light: .init(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0),
         dark: .init(red: 1.0, green: 0.27, blue: 0.23, alpha: 1.0)
     )
-    
+
     private init() {
     }
 

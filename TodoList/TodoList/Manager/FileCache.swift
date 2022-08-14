@@ -9,7 +9,6 @@
 import Foundation
 
 final class FileCache {
-
     private(set) var items: [TodoItem] = []
 
     func add(item: TodoItem) {
@@ -23,16 +22,14 @@ final class FileCache {
     }
 
     func modify(item: TodoItem) {
-        for (index, value) in self.items.enumerated() {
-            if value.id == item.id {
-                self.items[index] = item
-            }
+        for (index, value) in self.items.enumerated() where value.id == item.id {
+            self.items[index] = item
         }
     }
 
     func save(to fileName: String) {
         guard let fileURL = fileURL(for: fileName) else { return }
-        
+
         let jsonItems = self.items.map({ item in
             item.json
         })
@@ -52,7 +49,7 @@ final class FileCache {
         do {
             let data = try? Data(contentsOf: fileURL)
             if let jsonData = data {
-                let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options:[])
+                let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
                 if let arr = jsonObject as? [[String: Any]] {
                     let items = arr.compactMap({ item in
                         TodoItem.parse(json: item)
@@ -71,7 +68,7 @@ final class FileCache {
 
         let dirURL = cachesDirectoryPath.appendingPathComponent("TodoList")
 
-        var fileURL: URL? = nil
+        var fileURL: URL?
         var isDir: ObjCBool = false
         if FileManager.default.fileExists(atPath: dirURL.path, isDirectory: &isDir), isDir.boolValue {
             fileURL = dirURL.appendingPathComponent(fileName)
@@ -86,4 +83,3 @@ final class FileCache {
         return fileURL
     }
 }
-

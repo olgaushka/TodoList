@@ -20,7 +20,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
         static let newItemTextFieldHeight: CGFloat = 55
         static let newItemTextFieldLeftInset: CGFloat = 52
     }
-    
+
     private let newItemTextField: UITextField = {
         let textField = UITextField()
         textField.font = FontScheme.shared.body
@@ -37,7 +37,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
     override init(reuseIdentifier: String?) {
         self.viewModel = TodoNewItemFooterViewModel.makeDefault()
-        
+
         super.init(reuseIdentifier: reuseIdentifier)
 
         self.newItemTextField.delegate = self
@@ -57,7 +57,10 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
         self.newItemTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.newItemTextField.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: Consts.newItemTextFieldLeftInset),
+            self.newItemTextField.leadingAnchor.constraint(
+                equalTo: self.contentView.leadingAnchor,
+                constant: Consts.newItemTextFieldLeftInset
+            ),
             self.newItemTextField.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor),
             self.newItemTextField.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
             self.newItemTextField.heightAnchor.constraint(equalToConstant: Consts.newItemTextFieldHeight),
@@ -70,6 +73,7 @@ final class TodoNewItemFooterView: UITableViewHeaderFooterView {
 
     private func updateView() {
         let viewModel = self.viewModel
+        // swiftlint:disable:next line_length
         self.separatorView.backgroundColor = viewModel.isSeparatorHidden ? self.contentView.backgroundColor : ColorScheme.shared.separator
         self.newItemTextField.text = viewModel.text
     }
