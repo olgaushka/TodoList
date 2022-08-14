@@ -117,8 +117,19 @@ class TodoItemViewController: UIViewController {
                 self.delegate?.todoItemViewControllerDidFinish(self)
             case .failure(let error):
                 DDLogError(error.localizedDescription)
+                self.showErrorAlert()
             }
         }
+    }
+
+    private func showErrorAlert() {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: "Во время выполнения запроса произошла ошибка",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Понятно", style: .default, handler: nil))
+        self.present(alert, animated: true)
     }
 
     @objc

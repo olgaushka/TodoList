@@ -190,23 +190,27 @@ final class TodoItemsListViewController: UIViewController {
 
     private func loadData() {
         self.dependencies.fileCacheService.load(from: self.dependencies.fileName) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success:
-                self?.updateViewModels()
+                self.updateViewModels()
             case .failure(let error):
                 DDLogError(error.localizedDescription)
+                self.showErrorAlert()
             }
         }
     }
 
     private func saveData() {
         self.dependencies.fileCacheService.save(to: self.dependencies.fileName) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success:
                 DDLogInfo("Save success")
             case .failure(let error):
                 DDLogError(error.localizedDescription)
-                self?.loadData()
+                self.showErrorAlert()
+                self.loadData()
             }
         }
     }
@@ -259,6 +263,16 @@ final class TodoItemsListViewController: UIViewController {
         self.dependencies.fileCacheService.modify(changedItem)
         self.saveData()
         self.updateViewModels()
+    }
+
+    private func showErrorAlert() {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: "Во время выполнения запроса произошла ошибка",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Понятно", style: .default, handler: nil))
+        self.present(alert, animated: true)
     }
 
     @objc
