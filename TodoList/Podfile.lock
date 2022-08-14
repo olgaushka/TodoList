@@ -4,11 +4,13 @@ PODS:
     - CocoaLumberjack/Core
   - SwiftLint (0.48.0)
   - TodoListModels (0.0.1)
+  - TodoListResources (0.0.1)
 
 DEPENDENCIES:
   - CocoaLumberjack/Swift (~> 3.7.4)
   - SwiftLint (~> 0.48.0)
   - TodoListModels (from `Packages/Models`)
+  - TodoListResources (from `Packages/Resources`)
 
 SPEC REPOS:
   trunk:
@@ -18,12 +20,15 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   TodoListModels:
     :path: Packages/Models
+  TodoListResources:
+    :path: Packages/Resources
 
 SPEC CHECKSUMS:
   CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
   SwiftLint: 284cea64b6187c5d6bd83e9a548a64104d546447
   TodoListModels: c17f3db7d7c7810fa76ba9789b38d1f8597ac977
+  TodoListResources: ef336c004ef81ba26e4676ed8beac6ef2e0eceee
 
-PODFILE CHECKSUM: 73ef696c2aac491d73d255a1ae9ab86bfa669984
+PODFILE CHECKSUM: 6a8043523b45fd53bf1826d460ad6a67667aa77e
 
 COCOAPODS: 1.11.3

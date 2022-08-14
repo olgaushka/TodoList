@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TodoListResources
 
 final class TodoItemCell: UITableViewCell {
     var viewModel: TodoItemCellViewModel {
@@ -53,7 +54,7 @@ final class TodoItemCell: UITableViewCell {
 
     private let calendarImageView: UIImageView = {
         let img = UIImageView()
-        img.image = UIImage(named: "Icon Calendar")
+        img.image = UIImage(named: "Icon Calendar", in: TodoListResources.bundle, compatibleWith: nil)
         return img
     }()
 
@@ -206,7 +207,8 @@ final class TodoItemCell: UITableViewCell {
         switch viewModel.importance {
         case .low:
             self.importanceImageView.isHidden = false
-            self.importanceImageView.image = UIImage(named: "Icon Arrow")
+            let image = UIImage(named: "Icon Arrow", in: TodoListResources.bundle, compatibleWith: nil)
+            self.importanceImageView.image = image
 
             self.importanceImageViewWidthConstraint.constant = importanceImageView.image?.size.width ?? 0
             self.importanceImageViewHeightConstraint.constant = importanceImageView.image?.size.height ?? 0
@@ -219,7 +221,8 @@ final class TodoItemCell: UITableViewCell {
 
         case .high:
             self.importanceImageView.isHidden = false
-            self.importanceImageView.image = UIImage(named: "Icon Exclamation")
+            let image = UIImage(named: "Icon Exclamation", in: TodoListResources.bundle, compatibleWith: nil)
+            self.importanceImageView.image = image
             self.importanceImageViewWidthConstraint.constant = importanceImageView.image?.size.width ?? 0
             self.importanceImageViewHeightConstraint.constant = importanceImageView.image?.size.height ?? 0
             self.itemTextLabelToImportanceImageViewLeadingConstraint.isActive = true
@@ -231,7 +234,8 @@ final class TodoItemCell: UITableViewCell {
         self.itemTextLabel.textColor = ColorScheme.shared.labelPrimary
 
         if viewModel.isDone {
-            self.doneButton.setBackgroundImage(UIImage(named: "Cell Done"), for: .normal)
+            let image = UIImage(named: "Cell Done", in: TodoListResources.bundle, compatibleWith: nil)
+            self.doneButton.setBackgroundImage(image, for: .normal)
             attributeString.addAttribute(
                 NSAttributedString.Key.strikethroughStyle,
                 value: 1,
@@ -241,9 +245,11 @@ final class TodoItemCell: UITableViewCell {
             self.itemTextLabel.textColor = ColorScheme.shared.labelTertiary
         } else {
             if deadlineIsMissed {
-                self.doneButton.setBackgroundImage(UIImage(named: "Cell Deadline"), for: .normal)
+                let image = UIImage(named: "Cell Deadline", in: TodoListResources.bundle, compatibleWith: nil)
+                self.doneButton.setBackgroundImage(image, for: .normal)
             } else {
-                self.doneButton.setBackgroundImage(UIImage(named: "Cell Normal"), for: .normal)
+                let image = UIImage(named: "Cell Normal", in: TodoListResources.bundle, compatibleWith: nil)
+                self.doneButton.setBackgroundImage(image, for: .normal)
             }
         }
     }

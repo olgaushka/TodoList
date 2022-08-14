@@ -10,6 +10,7 @@
 
 import UIKit
 import TodoListModels
+import TodoListResources
 
 final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies
@@ -51,7 +52,8 @@ final class TodoItemsListViewController: UIViewController {
     }()
     private let addButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(named: "Button Add"), for: .normal)
+        let image = UIImage(named: "Button Add", in: TodoListResources.bundle, compatibleWith: nil)
+        button.setImage(image, for: .normal)
         return button
     }()
     private let itemsTableView: DynamicTableView = DynamicTableView(frame: .zero, style: .plain)
@@ -337,7 +339,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
         }
 
         action.backgroundColor = ColorScheme.shared.green
-        action.image = UIImage(named: "Action Check")
+        action.image = UIImage(named: "Action Check", in: TodoListResources.bundle, compatibleWith: nil)
         return UISwipeActionsConfiguration(actions: [action])
     }
 
@@ -352,7 +354,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
             completionHandler(true)
         }
         info.backgroundColor = ColorScheme.shared.grayLight
-        info.image = UIImage(named: "Action Info")
+        info.image = UIImage(named: "Action Info", in: TodoListResources.bundle, compatibleWith: nil)
 
         // Trash action
         let trash = UIContextualAction(style: .destructive, title: nil) { [weak self] _, _, completionHandler in
@@ -361,7 +363,7 @@ extension TodoItemsListViewController: UITableViewDelegate {
             completionHandler(true)
         }
         trash.backgroundColor = ColorScheme.shared.red
-        trash.image = UIImage(named: "Action Trash")
+        trash.image = UIImage(named: "Action Trash", in: TodoListResources.bundle, compatibleWith: nil)
 
         let configuration = UISwipeActionsConfiguration(actions: [trash, info])
 

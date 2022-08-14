@@ -9,6 +9,7 @@ target 'TodoList' do
   pod 'SwiftLint', '~> 0.48.0'
 
   pod 'TodoListModels', :path => 'Packages/Models'
+  pod 'TodoListResources', :path => 'Packages/Resources'
 
   target 'TodoListTests' do
     inherit! :search_paths

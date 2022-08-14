@@ -20,7 +20,6 @@
 		79E163BD289694520052ADA9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163BC289694520052ADA9 /* SceneDelegate.swift */; };
 		79E163BF289694520052ADA9 /* TodoItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163BE289694520052ADA9 /* TodoItemViewController.swift */; };
 		79E163C2289694520052ADA9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 79E163C0289694520052ADA9 /* Main.storyboard */; };
-		79E163C4289694540052ADA9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79E163C3289694540052ADA9 /* Assets.xcassets */; };
 		79E163C7289694540052ADA9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 79E163C5289694540052ADA9 /* LaunchScreen.storyboard */; };
 		79E163E0289697CD0052ADA9 /* TodoItem+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163DF289697CD0052ADA9 /* TodoItem+JSON.swift */; };
 		79E163E328969A050052ADA9 /* FileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79E163E228969A050052ADA9 /* FileCache.swift */; };
@@ -57,7 +56,6 @@
 		79E163BC289694520052ADA9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		79E163BE289694520052ADA9 /* TodoItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemViewController.swift; sourceTree = "<group>"; };
 		79E163C1289694520052ADA9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		79E163C3289694540052ADA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		79E163C6289694540052ADA9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		79E163C8289694540052ADA9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		79E163CD289694540052ADA9 /* TodoListTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TodoListTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -135,7 +133,6 @@
 				79E163E82896BCCE0052ADA9 /* ViewModels */,
 				79E163E42896B5790052ADA9 /* TodoItemsListScreen */,
 				79E163C0289694520052ADA9 /* Main.storyboard */,
-				79E163C3289694540052ADA9 /* Assets.xcassets */,
 				79E163C5289694540052ADA9 /* LaunchScreen.storyboard */,
 				79E163C8289694540052ADA9 /* Info.plist */,
 			);
@@ -293,7 +290,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				79E163C7289694540052ADA9 /* LaunchScreen.storyboard in Resources */,
-				79E163C4289694540052ADA9 /* Assets.xcassets in Resources */,
 				79E163C2289694520052ADA9 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

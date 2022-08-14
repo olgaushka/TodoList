@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import TodoList
+import TodoListModels
 
 class TodoItemJSONTests: XCTestCase {
     func testParseDefault() {
