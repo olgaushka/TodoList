@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import TodoListModels
 
 final class TodoItemScrollViewModel {
     var text: String

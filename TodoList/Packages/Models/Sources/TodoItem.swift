@@ -10,23 +10,23 @@ import Foundation
 
 // rawValue is a part of storage model format
 // swiftlint:disable redundant_string_enum_value
-enum Importance: String {
+public enum Importance: String {
     case high = "high"
     case medium = "medium"
     case low = "low"
 }
 // swiftlint:enable redundant_string_enum_value
 
-struct TodoItem {
-    let id: String
-    let text: String
-    let importance: Importance
-    let deadline: Date?
-    let isDone: Bool
-    let createdAt: Date
-    let modifiedAt: Date?
+public struct TodoItem {
+    public let id: String
+    public let text: String
+    public let importance: Importance
+    public let deadline: Date?
+    public let isDone: Bool
+    public let createdAt: Date
+    public let modifiedAt: Date?
 
-    init(
+    public init(
         id: String = UUID().uuidString,
         text: String,
         importance: Importance = .medium,
@@ -46,7 +46,7 @@ struct TodoItem {
 }
 
 extension TodoItem {
-    func toggleCompleted() -> TodoItem {
+    public func toggleCompleted() -> TodoItem {
         TodoItem(
             id: self.id,
             text: self.text,

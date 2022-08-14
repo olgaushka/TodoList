@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import TodoListModels
 
 extension TodoItem {
     var json: Any {

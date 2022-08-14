@@ -8,6 +8,7 @@
 
 import UIKit
 import CocoaLumberjack
+import TodoListModels
 
 class TodoItemViewController: UIViewController {
     var item: TodoItem = TodoItem(text: "")

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TodoListModels
 
 // swiftlint:disable:next type_body_length
 final class TodoItemScrollView: UIScrollView {

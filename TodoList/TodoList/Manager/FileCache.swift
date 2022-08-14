@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import TodoListModels
 
 final class FileCache {
     private(set) var items: [TodoItem] = []

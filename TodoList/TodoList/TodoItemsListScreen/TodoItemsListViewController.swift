@@ -9,6 +9,7 @@
 // swiftlint:disable file_length
 
 import UIKit
+import TodoListModels
 
 final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies

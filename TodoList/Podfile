@@ -8,6 +8,8 @@ target 'TodoList' do
   pod 'CocoaLumberjack/Swift', '~> 3.7.4'
   pod 'SwiftLint', '~> 0.48.0'
 
+  pod 'TodoListModels', :path => 'Packages/Models'
+
   target 'TodoListTests' do
     inherit! :search_paths
     # Pods for testing
