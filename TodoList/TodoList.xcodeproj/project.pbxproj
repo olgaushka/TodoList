@@ -12,7 +12,6 @@
 		7935D95B28A5AA2800510612 /* FileCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7935D95A28A5AA2800510612 /* FileCacheService.swift */; };
 		7935D95F28A5AA6200510612 /* MockFileCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7935D95E28A5AA6200510612 /* MockFileCacheService.swift */; };
 		79479AD328A70D6700EE608C /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79479AD228A70D6700EE608C /* NetworkService.swift */; };
-		79479AD728A70DB100EE608C /* MockNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79479AD628A70DB100EE608C /* MockNetworkService.swift */; };
 		7954A6E0289C43BB00F83153 /* TodoItemsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */; };
 		7963A48228A4497E00EBDAB8 /* ColorScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7963A48128A4497E00EBDAB8 /* ColorScheme.swift */; };
 		7963A48628A44E0600EBDAB8 /* FontScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7963A48528A44E0600EBDAB8 /* FontScheme.swift */; };
@@ -51,7 +50,6 @@
 		7935D95A28A5AA2800510612 /* FileCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCacheService.swift; sourceTree = "<group>"; };
 		7935D95E28A5AA6200510612 /* MockFileCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFileCacheService.swift; sourceTree = "<group>"; };
 		79479AD228A70D6700EE608C /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
-		79479AD628A70DB100EE608C /* MockNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockNetworkService.swift; sourceTree = "<group>"; };
 		7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemsListViewController.swift; sourceTree = "<group>"; };
 		7963A48128A4497E00EBDAB8 /* ColorScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorScheme.swift; sourceTree = "<group>"; };
 		7963A48528A44E0600EBDAB8 /* FontScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScheme.swift; sourceTree = "<group>"; };
@@ -171,7 +169,6 @@
 				7935D95A28A5AA2800510612 /* FileCacheService.swift */,
 				7935D95E28A5AA6200510612 /* MockFileCacheService.swift */,
 				79479AD228A70D6700EE608C /* NetworkService.swift */,
-				79479AD628A70DB100EE608C /* MockNetworkService.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -413,7 +410,6 @@
 				7963A48628A44E0600EBDAB8 /* FontScheme.swift in Sources */,
 				79E163BB289694520052ADA9 /* AppDelegate.swift in Sources */,
 				797FEC1A289F3EE300534DAC /* TodoNewItemFooterView.swift in Sources */,
-				79479AD728A70DB100EE608C /* MockNetworkService.swift in Sources */,
 				79E163E328969A050052ADA9 /* FileCache.swift in Sources */,
 				7924D2B928A030010009A26D /* TodoNewItemFooterViewModel.swift in Sources */,
 				7935D95B28A5AA2800510612 /* FileCacheService.swift in Sources */,
