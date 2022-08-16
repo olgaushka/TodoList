@@ -12,6 +12,7 @@
 		7935D95B28A5AA2800510612 /* FileCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7935D95A28A5AA2800510612 /* FileCacheService.swift */; };
 		7935D95F28A5AA6200510612 /* MockFileCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7935D95E28A5AA6200510612 /* MockFileCacheService.swift */; };
 		79479AD328A70D6700EE608C /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79479AD228A70D6700EE608C /* NetworkService.swift */; };
+		794C90AB28ABA63300AD89BA /* DefaultNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C90AA28ABA63300AD89BA /* DefaultNetworkService.swift */; };
 		794C90AF28ABA76B00AD89BA /* NetworkTodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C90AE28ABA76B00AD89BA /* NetworkTodoItem.swift */; };
 		794C90B728AC337300AD89BA /* TodoItem+Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794C90B628AC337300AD89BA /* TodoItem+Network.swift */; };
 		7954A6E0289C43BB00F83153 /* TodoItemsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */; };
@@ -52,6 +53,7 @@
 		7935D95A28A5AA2800510612 /* FileCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCacheService.swift; sourceTree = "<group>"; };
 		7935D95E28A5AA6200510612 /* MockFileCacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFileCacheService.swift; sourceTree = "<group>"; };
 		79479AD228A70D6700EE608C /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		794C90AA28ABA63300AD89BA /* DefaultNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultNetworkService.swift; sourceTree = "<group>"; };
 		794C90AE28ABA76B00AD89BA /* NetworkTodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkTodoItem.swift; sourceTree = "<group>"; };
 		794C90B628AC337300AD89BA /* TodoItem+Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodoItem+Network.swift"; sourceTree = "<group>"; };
 		7954A6DF289C43BB00F83153 /* TodoItemsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemsListViewController.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				7935D95A28A5AA2800510612 /* FileCacheService.swift */,
 				7935D95E28A5AA6200510612 /* MockFileCacheService.swift */,
 				79479AD228A70D6700EE608C /* NetworkService.swift */,
+				794C90AA28ABA63300AD89BA /* DefaultNetworkService.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -425,6 +428,7 @@
 				79E163BD289694520052ADA9 /* SceneDelegate.swift in Sources */,
 				797FEC14289ED5E900534DAC /* TodoItemCellViewModel.swift in Sources */,
 				794C90B728AC337300AD89BA /* TodoItem+Network.swift in Sources */,
+				794C90AB28ABA63300AD89BA /* DefaultNetworkService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
