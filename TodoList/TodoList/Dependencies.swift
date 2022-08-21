@@ -9,6 +9,5 @@
 import Foundation
 
 struct Dependencies {
-    let fileCacheService: FileCacheService
-    let fileName: String
+    let dataService: DataService
 }

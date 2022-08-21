@@ -189,7 +189,7 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func loadData() {
-        self.dependencies.fileCacheService.load(from: self.dependencies.fileName) { [weak self] result in
+        self.dependencies.dataService.loadData { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
@@ -201,22 +201,8 @@ final class TodoItemsListViewController: UIViewController {
         }
     }
 
-    private func saveData() {
-        self.dependencies.fileCacheService.save(to: self.dependencies.fileName) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success:
-                DDLogInfo("Save success")
-            case .failure(let error):
-                DDLogError(error.localizedDescription)
-                self.showErrorAlert()
-                self.loadData()
-            }
-        }
-    }
-
     private func updateViewModels() {
-        let allItems = self.dependencies.fileCacheService.items
+        let allItems = self.dependencies.dataService.items
         let notCompletedItems = allItems.filter({ !$0.isDone })
         self.completedLabel.text = "Выполнено — \(allItems.count - notCompletedItems.count)"
         let items: [TodoItem]
@@ -242,7 +228,7 @@ final class TodoItemsListViewController: UIViewController {
 
     private func didTapInfo(viewModel: TodoItemCellViewModel?) {
         let todoItemViewController = TodoItemViewController(dependencies: self.dependencies)
-        if let item = self.dependencies.fileCacheService.items.first(where: { $0.id == viewModel?.id }) {
+        if let item = self.dependencies.dataService.items.first(where: { $0.id == viewModel?.id }) {
             todoItemViewController.item = item
         }
         todoItemViewController.delegate = self
@@ -251,17 +237,32 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapDelete(viewModel: TodoItemCellViewModel) {
-        self.dependencies.fileCacheService.delete(id: viewModel.id)
-        self.saveData()
+        self.dependencies.dataService.delete(id: viewModel.id) { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success:
+                DDLogInfo("Delete success")
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+            }
+        }
         self.updateViewModels()
     }
 
     private func didTapDone(viewModel: TodoItemCellViewModel) {
-        let dependencies = self.dependencies
-        guard let item = dependencies.fileCacheService.items.first(where: { $0.id == viewModel.id }) else { return }
+        guard let item = self.dependencies.dataService.items.first(where: { $0.id == viewModel.id }) else { return }
         let changedItem = item.toggleCompleted()
-        self.dependencies.fileCacheService.modify(changedItem)
-        self.saveData()
+        dependencies.dataService.modify(changedItem) {  [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success:
+                DDLogInfo("Modify success")
+                self.updateViewModels()
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+            }
+        }
         self.updateViewModels()
     }
 
@@ -337,9 +338,18 @@ extension TodoItemsListViewController: UITableViewDataSource {
             guard let self = self else { return }
 
             let newItem = TodoItem(text: footerViewModel.text)
-            self.dependencies.fileCacheService.add(newItem)
-            self.saveData()
+            self.dependencies.dataService.add(newItem) {  [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    DDLogInfo("Create success")
+                    self.updateViewModels()
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
+            }
             self.updateViewModels()
+
             UIView.setAnimationsEnabled(false)
             self.itemsTableView.reloadSections(IndexSet(integer: 0), with: UITableView.RowAnimation.none)
             UIView.setAnimationsEnabled(true)
@@ -353,7 +363,6 @@ extension TodoItemsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewModel = self.itemViewModels[indexPath.row]
         self.didTapInfo(viewModel: viewModel)
-
         self.itemsTableView.deselectRow(at: indexPath, animated: true)
     }
 
