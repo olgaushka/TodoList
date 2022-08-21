@@ -21,8 +21,10 @@ struct NetworkTodoItem: Codable {
     let importance: NetworkImportance
     let deadline: Int64?
     let done: Bool
+    let color: String
     let createdAt: Int64
-    let changedAt: Int64?
+    let changedAt: Int64
+    let lastUpdatedBy: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -30,11 +32,13 @@ struct NetworkTodoItem: Codable {
         case importance
         case deadline
         case done
+        case color
         case createdAt = "created_at"
         case changedAt = "changed_at"
+        case lastUpdatedBy = "last_updated_by"
     }
 
-    init(item: TodoItem) {
+    init(_ item: TodoItem) {
         self.id = item.id
         self.text = item.text
         switch item.importance {
@@ -55,19 +59,9 @@ struct NetworkTodoItem: Codable {
         if let changedAt = item.modifiedAt?.timeIntervalSince1970 {
             self.changedAt = Int64(changedAt)
         } else {
-            self.changedAt = nil
+            self.changedAt = self.createdAt
         }
+        self.lastUpdatedBy = "1"
+        self.color = "#FFFFFF"
     }
 }
-
-// {
-//  "id": <uuid>, // уникальный идентификатор элемента
-//  "text": "blablabla",
-//  "importance": "<importance>", // importance = low | basic | important
-//  "deadline": <unix timestamp>, // int64, может отсутствовать, тогда нет
-//  "done": <bool>,
-//  "color": "#FFFFFF", // может отсутствовать
-//  "created_at": <unix timestamp>,
-//  "changed_at": <unix timestamp>,
-//  "last_updated_by": <device id>
-// }

@@ -30,12 +30,8 @@ extension TodoItem {
         }
         let isDone = networkItem.done
         let createdAt = Date(timeIntervalSince1970: Double(networkItem.createdAt))
-        let modifiedAt: Date?
-        if let modifiedAtInt64 = networkItem.changedAt {
-            modifiedAt = Date(timeIntervalSince1970: Double(modifiedAtInt64))
-        } else {
-            modifiedAt = nil
-        }
+        let modifiedAt = Date(timeIntervalSince1970: Double(networkItem.changedAt))
+
         self.init(
             id: id,
             text: text,
