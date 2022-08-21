@@ -13,6 +13,7 @@ import CocoaLumberjack
 import TodoListModels
 import TodoListResources
 
+// swiftlint:disable:next type_body_length
 final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies
     private var itemViewModels: [TodoItemCellViewModel] = []
@@ -237,9 +238,7 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapDelete(viewModel: TodoItemCellViewModel) {
-        self.dependencies.dataService.delete(id: viewModel.id) { [weak self] result in
-            guard let self = self else { return }
-
+        self.dependencies.dataService.delete(id: viewModel.id) { result in
             switch result {
             case .success:
                 DDLogInfo("Delete success")

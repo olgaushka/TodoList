@@ -6,12 +6,14 @@
 //  Copyright © 2022 Olga Zorina. All rights reserved.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 import TodoListModels
 import CocoaLumberjack
 
+// swiftlint:disable:next type_body_length
 final class DefaultNetworkService: NetworkService {
-
     private let baseURL = "https://beta.mrdekk.ru"
     private let list = "/todobackend/list"
     private var accessToken: String = "EnchantingVoicelessSpellcasting"
@@ -20,8 +22,16 @@ final class DefaultNetworkService: NetworkService {
         urlSession.configuration.timeoutIntervalForRequest = 30.0
         return urlSession
     }()
+    private var retryQueue: DispatchQueue {
+        return self.urlSession.delegateQueue.underlyingQueue ?? .main
+    }
+    private var completionQueue: DispatchQueue {
+        return .main
+    }
 
-    func getAllTodoItemsWithRequest(completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void) {
+    func getAllTodoItemsWithRequest(
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.requestForList(httpMethod: "GET")
         switch requestResult {
         case let .success(request):
@@ -47,8 +57,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    func sendAllTodoItemsWithRequest(_ request: NetworkTodoItemsListRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void) {
-
+    func sendAllTodoItemsWithRequest(
+        _ request: NetworkTodoItemsListRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.requestForListPatch(request, revision: revision, httpMethod: "PATCH")
         switch requestResult {
         case let .success(request):
@@ -74,7 +87,10 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    func getTodoItem(at id: String, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+    func getTodoItem(
+        at id: String,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.requestForItemWithIdentifier(id, httpMethod: "GET")
 
         switch requestResult {
@@ -101,7 +117,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    func createTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+    func createTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.requestForElementCreate(request, revision: revision, httpMethod: "POST")
         switch requestResult {
         case let .success(request):
@@ -129,7 +149,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    func editTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+    func editTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.request(request, revision: revision, httpMethod: "PUT")
         switch requestResult {
         case let .success(request):
@@ -155,7 +179,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    func deleteTodoItem(id: String, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+    func deleteTodoItem(
+        id: String,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    ) {
         let requestResult = self.requestForItemWithIdentifier(id, revision: revision, httpMethod: "DELETE")
         switch requestResult {
         case let .success(request):
@@ -181,15 +209,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    private var retryQueue: DispatchQueue {
-        return self.urlSession.delegateQueue.underlyingQueue ?? .main
-    }
-
-    private var completionQueue: DispatchQueue {
-        return .main
-    }
-
-    private func request(_ request: NetworkTodoItemRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+    private func request(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        httpMethod: String
+    ) -> Result<URLRequest, NetworkServiceError> {
         let result = requestForItemWithIdentifier(request.element.id, revision: revision, httpMethod: httpMethod)
         switch result {
         case .success(var urlRequest):
@@ -207,13 +231,16 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    private func requestForItemWithIdentifier(_ identifier: String, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+    private func requestForItemWithIdentifier(
+        _ identifier: String,
+        revision: Int32,
+        httpMethod: String
+    ) -> Result<URLRequest, NetworkServiceError> {
         let requestResult = self.requestForItemWithIdentifier(identifier, httpMethod: httpMethod)
         let result: Result<URLRequest, NetworkServiceError>
         switch requestResult {
         case .success(var urlRequest):
             urlRequest.setValue("\(revision)", forHTTPHeaderField: "X-Last-Known-Revision")
-            print("urlRequest \(Self.printRequest(urlRequest))")
             result = .success(urlRequest)
 
         case let .failure(error):
@@ -222,7 +249,10 @@ final class DefaultNetworkService: NetworkService {
         return result
     }
 
-    private func requestForItemWithIdentifier(_ identifier: String, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+    private func requestForItemWithIdentifier(
+        _ identifier: String,
+        httpMethod: String
+    ) -> Result<URLRequest, NetworkServiceError> {
         guard var components = URLComponents(string: baseURL) else {
             return .failure(NetworkServiceError.invalidURL)
         }
@@ -237,12 +267,15 @@ final class DefaultNetworkService: NetworkService {
         var urlRequest = URLRequest(url: itemURL)
         urlRequest.httpMethod = httpMethod
         urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        print("urlRequest \(Self.printRequest(urlRequest))")
 
         return .success(urlRequest)
     }
 
-    private func requestForElementCreate(_ request: NetworkTodoItemRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+    private func requestForElementCreate(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        httpMethod: String
+    ) -> Result<URLRequest, NetworkServiceError> {
         let result = requestForList(httpMethod: httpMethod)
         switch result {
         case .success(var urlRequest):
@@ -262,7 +295,11 @@ final class DefaultNetworkService: NetworkService {
         }
     }
 
-    private func requestForListPatch(_ request: NetworkTodoItemsListRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+    private func requestForListPatch(
+        _ request: NetworkTodoItemsListRequest,
+        revision: Int32,
+        httpMethod: String
+    ) -> Result<URLRequest, NetworkServiceError> {
         let result = requestForList(httpMethod: httpMethod)
         switch result {
         case .success(var urlRequest):
@@ -298,7 +335,10 @@ final class DefaultNetworkService: NetworkService {
         return .success(urlRequest)
     }
 
-    private static func response<T: Decodable>(type: T.Type, from responsePair: (Data, HTTPURLResponse)) -> Result<T, NetworkServiceError> {
+    private static func response<T: Decodable>(
+        type: T.Type,
+        from responsePair: (Data, HTTPURLResponse)
+    ) -> Result<T, NetworkServiceError> {
         let (data, response) = responsePair
 
         switch response.statusCode {
@@ -333,7 +373,10 @@ final class DefaultNetworkService: NetworkService {
         case noData
     }
 
-    private func dataTask(with request: URLRequest, completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void) -> URLSessionDataTask {
+    private func dataTask(
+        with request: URLRequest,
+        completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
+    ) -> URLSessionDataTask {
         return self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 print(error)
@@ -352,13 +395,6 @@ final class DefaultNetworkService: NetworkService {
             }
 
             completion(.success((data, httpResponse)))
-        }
-    }
-
-    private static func printRequest(_ request: URLRequest) {
-        print("\(request.httpMethod) \(request.url)\n\(request.allHTTPHeaderFields)")
-        if let body = request.httpBody, let str = String(data: body, encoding: .utf8) {
-            print("\(str)")
         }
     }
 }

@@ -16,7 +16,7 @@ final class DataService {
     let fileName: String
 
     var dataIsDirty: Bool {
-        didSet(newValue){
+        didSet(newValue) {
             print("\(newValue)")
         }
     }
@@ -66,7 +66,7 @@ final class DataService {
         self.saveFileCacheData()
 
         if self.dataIsDirty {
-            self.synchronizeData { [weak self] result in
+            self.synchronizeData { result in
                 switch result {
                 case .success:
                     completion(.success(()))
@@ -80,7 +80,10 @@ final class DataService {
         let networkItem = NetworkTodoItem(newItem)
         let elementRequest = NetworkTodoItemRequest(element: networkItem)
 
-        self.networkService.createTodoItemWithRequest(elementRequest, revision: self.fileCacheService.revision) { [weak self] result in
+        self.networkService.createTodoItemWithRequest(
+            elementRequest,
+            revision: self.fileCacheService.revision
+        ) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
@@ -103,7 +106,7 @@ final class DataService {
         self.saveFileCacheData()
 
         if self.dataIsDirty {
-            self.synchronizeData { [weak self] result in
+            self.synchronizeData { result in
                 switch result {
                 case .success:
                     completion(.success(()))
@@ -134,7 +137,7 @@ final class DataService {
         self.saveFileCacheData()
 
         if self.dataIsDirty {
-            self.synchronizeData { [weak self] result in
+            self.synchronizeData { result in
                 switch result {
                 case .success:
                     completion(.success(()))
@@ -148,7 +151,10 @@ final class DataService {
         let networkItem = NetworkTodoItem(item)
         let elementRequest = NetworkTodoItemRequest(element: networkItem)
 
-        self.networkService.editTodoItemWithRequest(elementRequest, revision: self.fileCacheService.revision) { [weak self] result in
+        self.networkService.editTodoItemWithRequest(
+            elementRequest,
+            revision: self.fileCacheService.revision
+        ) { [weak self] result in
             guard let self = self else { return }
 
             switch result {
@@ -171,7 +177,10 @@ final class DataService {
             return NetworkTodoItem(item)
         }
         let listRequest = NetworkTodoItemsListRequest(list: networkItems)
-        self.networkService.sendAllTodoItemsWithRequest(listRequest, revision: self.fileCacheService.revision) { [weak self] result in
+        self.networkService.sendAllTodoItemsWithRequest(
+            listRequest,
+            revision: self.fileCacheService.revision
+        ) { [weak self] result in
             guard let self = self else { return }
 
             switch result {

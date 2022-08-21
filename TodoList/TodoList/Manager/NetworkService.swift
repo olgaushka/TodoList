@@ -43,10 +43,31 @@ enum NetworkServiceError: Error {
 }
 
 protocol NetworkService {
-    func getAllTodoItemsWithRequest(completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void)
-    func sendAllTodoItemsWithRequest(_ request: NetworkTodoItemsListRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void)
-    func getTodoItem(at id: String, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void)
-    func createTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void)
-    func editTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void)
-    func deleteTodoItem(id: String, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void)
+    func getAllTodoItemsWithRequest(
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    )
+    func sendAllTodoItemsWithRequest(
+        _ request: NetworkTodoItemsListRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    )
+    func getTodoItem(
+        at id: String,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func createTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func editTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func deleteTodoItem(
+        id: String,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
 }
