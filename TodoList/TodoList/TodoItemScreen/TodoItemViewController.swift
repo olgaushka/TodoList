@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CocoaLumberjack
+import TodoListModels
 
 class TodoItemViewController: UIViewController {
     var item: TodoItem = TodoItem(text: "")
@@ -19,8 +21,18 @@ class TodoItemViewController: UIViewController {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
 
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: UIResponder.keyboardDidShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidHide), name: UIResponder.keyboardDidHideNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardDidShow),
+            name: UIResponder.keyboardDidShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardDidHide),
+            name: UIResponder.keyboardDidHideNotification,
+            object: nil
+        )
     }
 
     required init?(coder: NSCoder) {
@@ -35,7 +47,11 @@ class TodoItemViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let viewModel = TodoItemScrollViewModel(text: self.item.text, importance: self.item.importance, deadline: self.item.deadline)
+        let viewModel = TodoItemScrollViewModel(
+            text: self.item.text,
+            importance: self.item.importance,
+            deadline: self.item.deadline
+        )
         viewModel.didTapDelete = { [weak self] in
             guard let self = self else { return }
             let dependencies = self.dependencies
@@ -71,8 +87,16 @@ class TodoItemViewController: UIViewController {
 
     private func setupNavigationBar() {
         self.navigationItem.title = "Дело"
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(done))
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .save,
+            target: self,
+            action: #selector(done)
+        )
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .cancel,
+            target: self,
+            action: #selector(cancel)
+        )
 
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
@@ -95,15 +119,29 @@ class TodoItemViewController: UIViewController {
 
     @objc
     private func done() {
-        print("Сохранить")
+        DDLogInfo("Сохранить")
 
         let viewModel = self.itemScrollView.viewModel
         let dependencies = self.dependencies
         if let item = dependencies.fileCache.items.first(where: { $0.id == self.item.id }) {
-            let changedItem = TodoItem(id: item.id, text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: item.isDone, createdAt: item.createdAt, modifiedAt: Date())
+            let changedItem = TodoItem(
+                id: item.id,
+                text: viewModel.text,
+                importance: viewModel.importance,
+                deadline: viewModel.deadline,
+                isDone: item.isDone,
+                createdAt: item.createdAt,
+                modifiedAt: Date()
+            )
             dependencies.fileCache.modify(item: changedItem)
         } else {
-            let newItem = TodoItem(text: viewModel.text, importance: viewModel.importance, deadline: viewModel.deadline, isDone: false, createdAt: Date())
+            let newItem = TodoItem(
+                text: viewModel.text,
+                importance: viewModel.importance,
+                deadline: viewModel.deadline,
+                isDone: false,
+                createdAt: Date()
+            )
             dependencies.fileCache.add(item: newItem)
         }
         dependencies.fileCache.save(to: dependencies.fileName)
@@ -113,7 +151,7 @@ class TodoItemViewController: UIViewController {
 
     @objc
     private func cancel() {
-        print("Отменить")
+        DDLogInfo("Отменить")
         self.dismiss(animated: true)
     }
 }
@@ -121,4 +159,3 @@ class TodoItemViewController: UIViewController {
 protocol TodoItemViewControllerDelegate: AnyObject {
     func todoItemViewControllerDidFinish(_ viewController: TodoItemViewController)
 }
-

@@ -1,0 +1,18 @@
+source 'https://cdn.cocoapods.org/'
+
+platform :ios, '13.0'
+
+target 'TodoList' do
+  use_frameworks!
+
+  pod 'CocoaLumberjack/Swift', '~> 3.7.4'
+  pod 'SwiftLint', '~> 0.48.0'
+
+  pod 'TodoListModels', :path => 'Packages/Models'
+  pod 'TodoListResources', :path => 'Packages/Resources'
+
+  target 'TodoListTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+end

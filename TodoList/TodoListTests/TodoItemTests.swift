@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import TodoList
+import TodoListModels
 
 class TodoItemJSONTests: XCTestCase {
     func testParseDefault() {
@@ -23,7 +24,15 @@ class TodoItemJSONTests: XCTestCase {
         }
 
         let createdAt = Date(timeIntervalSince1970: 1658988000) // 2022.07.29 09:00:00 GMT+0300
-        let expected = TodoItem(id: "123", text: "Todo", importance: .medium, deadline: nil, isDone: false, createdAt: createdAt, modifiedAt: nil)
+        let expected = TodoItem(
+            id: "123",
+            text: "Todo",
+            importance: .medium,
+            deadline: nil,
+            isDone: false,
+            createdAt: createdAt,
+            modifiedAt: nil
+        )
 
         XCTAssertEqual(item.id, expected.id)
         XCTAssertEqual(item.text, expected.text)
@@ -52,7 +61,15 @@ class TodoItemJSONTests: XCTestCase {
         let createdAt = Date(timeIntervalSince1970: 1658988000) // 2022.07.29 09:00:00 GMT+0300
         let modifiedAt = Date(timeIntervalSince1970: 1659204000) // 2022.07.30 21:00:00 GMT+0300
         let deadline = Date(timeIntervalSince1970: 1659301199) // 2022.07.31 23:59:59 GMT+0300
-        let expected = TodoItem(id: "123", text: "Todo", importance: .high, deadline: deadline, isDone: true, createdAt: createdAt, modifiedAt: modifiedAt)
+        let expected = TodoItem(
+            id: "123",
+            text: "Todo",
+            importance: .high,
+            deadline: deadline,
+            isDone: true,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt
+        )
 
         XCTAssertEqual(item.id, expected.id)
         XCTAssertEqual(item.text, expected.text)
@@ -65,7 +82,15 @@ class TodoItemJSONTests: XCTestCase {
 
     func testGenerateDefault() {
         let createdAt = Date(timeIntervalSince1970: 1658988000) // 2022.07.29 09:00:00 GMT+0300
-        let item = TodoItem(id: "123", text: "Todo", importance: .medium, deadline: nil, isDone: false, createdAt: createdAt, modifiedAt: nil)
+        let item = TodoItem(
+            id: "123",
+            text: "Todo",
+            importance: .medium,
+            deadline: nil,
+            isDone: false,
+            createdAt: createdAt,
+            modifiedAt: nil
+        )
         let object = item.json
 
         let expected: [String: Any] = [
@@ -87,7 +112,15 @@ class TodoItemJSONTests: XCTestCase {
         let createdAt = Date(timeIntervalSince1970: 1658988000) // 2022.07.29 09:00:00 GMT+0300
         let modifiedAt = Date(timeIntervalSince1970: 1659204000) // 2022.07.30 21:00:00 GMT+0300
         let deadline = Date(timeIntervalSince1970: 1659301199) // 2022.07.31 23:59:59 GMT+0300
-        let item = TodoItem(id: "123", text: "Todo", importance: .high, deadline: deadline, isDone: true, createdAt: createdAt, modifiedAt: modifiedAt)
+        let item = TodoItem(
+            id: "123",
+            text: "Todo",
+            importance: .high,
+            deadline: deadline,
+            isDone: true,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt
+        )
         let object = item.json
 
         let expected: [String: Any] = [

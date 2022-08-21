@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import TodoListModels
 
 final class TodoItemCellViewModel {
     let id: String
@@ -29,6 +30,4 @@ final class TodoItemCellViewModel {
         let viewModel = TodoItemCellViewModel(id: "", text: "")
         return viewModel
     }
-
 }
-

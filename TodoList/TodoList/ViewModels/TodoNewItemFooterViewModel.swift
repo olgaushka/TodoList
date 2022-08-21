@@ -23,5 +23,4 @@ final class TodoNewItemFooterViewModel {
         let viewModel = TodoNewItemFooterViewModel(text: "", isSeparatorHidden: true)
         return viewModel
     }
-
 }

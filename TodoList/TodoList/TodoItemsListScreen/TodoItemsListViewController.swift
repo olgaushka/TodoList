@@ -6,7 +6,11 @@
 //  Copyright © 2022 Olga Zorina. All rights reserved.
 //
 
+// swiftlint:disable file_length
+
 import UIKit
+import TodoListModels
+import TodoListResources
 
 final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies
@@ -38,12 +42,18 @@ final class TodoItemsListViewController: UIViewController {
          let button = UIButton()
         button.setTitleColor(ColorScheme.shared.blue, for: .normal)
         button.titleLabel?.font = FontScheme.shared.subheadline
-        button.contentEdgeInsets = UIEdgeInsets(top: .leastNormalMagnitude, left: .leastNormalMagnitude, bottom: .leastNormalMagnitude, right: .leastNormalMagnitude)
+        button.contentEdgeInsets = UIEdgeInsets(
+            top: .leastNormalMagnitude,
+            left: .leastNormalMagnitude,
+            bottom: .leastNormalMagnitude,
+            right: .leastNormalMagnitude
+        )
         return button
     }()
     private let addButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(named: "Button Add"), for: .normal)
+        let image = UIImage(named: "Button Add", in: TodoListResources.bundle, compatibleWith: nil)
+        button.setImage(image, for: .normal)
         return button
     }()
     private let itemsTableView: DynamicTableView = DynamicTableView(frame: .zero, style: .plain)
@@ -55,8 +65,18 @@ final class TodoItemsListViewController: UIViewController {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
 
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillAppear(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillDisappear(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
 
     required init?(coder: NSCoder) {
@@ -68,6 +88,7 @@ final class TodoItemsListViewController: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
+    // swiftlint:disable:next function_body_length
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -76,8 +97,14 @@ final class TodoItemsListViewController: UIViewController {
         self.view.addSubview(self.completedLabel)
         self.completedLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.completedLabel.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: Consts.completedLabelInsets.left),
-            self.completedLabel.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: Consts.completedLabelInsets.top),
+            self.completedLabel.leadingAnchor.constraint(
+                equalTo: self.view.safeAreaLayoutGuide.leadingAnchor,
+                constant: Consts.completedLabelInsets.left
+            ),
+            self.completedLabel.topAnchor.constraint(
+                equalTo: self.view.safeAreaLayoutGuide.topAnchor,
+                constant: Consts.completedLabelInsets.top
+            ),
         ])
 
         self.view.addSubview(self.showAllButton)
@@ -85,13 +112,19 @@ final class TodoItemsListViewController: UIViewController {
         self.showAllButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             self.showAllButton.topAnchor.constraint(equalTo: self.completedLabel.topAnchor),
-            self.showAllButton.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -Consts.showAllButtonInsets.right),
+            self.showAllButton.trailingAnchor.constraint(
+                equalTo: self.view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -Consts.showAllButtonInsets.right
+            ),
         ])
 
         self.view.addSubview(self.addButton)
         self.addButton.addTarget(self, action: #selector(addButtonClicked(_:)), for: .touchUpInside)
         self.addButton.translatesAutoresizingMaskIntoConstraints = false
-        self.addButtonBottomConstraint = self.addButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -Consts.addButtonInsets.bottom)
+        self.addButtonBottomConstraint = self.addButton.bottomAnchor.constraint(
+            equalTo: self.view.safeAreaLayoutGuide.bottomAnchor,
+            constant: -Consts.addButtonInsets.bottom
+        )
         NSLayoutConstraint.activate([
             self.addButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             self.addButtonBottomConstraint
@@ -99,8 +132,14 @@ final class TodoItemsListViewController: UIViewController {
 
         self.itemsTableView.dataSource = self
         self.itemsTableView.delegate = self
-        self.itemsTableView.register(TodoItemCell.self, forCellReuseIdentifier: Consts.cellReuseIdentifier)
-        self.itemsTableView.register(TodoNewItemFooterView.self, forHeaderFooterViewReuseIdentifier: Consts.footerReuseIdentifier)
+        self.itemsTableView.register(
+            TodoItemCell.self,
+            forCellReuseIdentifier: Consts.cellReuseIdentifier
+        )
+        self.itemsTableView.register(
+            TodoNewItemFooterView.self,
+            forHeaderFooterViewReuseIdentifier: Consts.footerReuseIdentifier
+        )
         self.itemsTableView.estimatedSectionFooterHeight = Consts.estimatedItemsTableViewFooterHeight
         self.itemsTableView.layer.cornerRadius = Consts.cornerRadius
         self.itemsTableView.separatorInset.left = Consts.leftSeparatorInset
@@ -108,10 +147,22 @@ final class TodoItemsListViewController: UIViewController {
         self.view.addSubview(self.itemsTableView)
         self.itemsTableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.itemsTableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: Consts.itemsTableViewInsets.left),
-            self.itemsTableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -Consts.itemsTableViewInsets.right),
-            self.itemsTableView.topAnchor.constraint(equalTo: self.completedLabel.bottomAnchor, constant: Consts.itemsTableViewInsets.top),
-            self.itemsTableView.bottomAnchor.constraint(lessThanOrEqualTo: self.addButton.topAnchor, constant:-Consts.itemsTableViewInsets.bottom),
+            self.itemsTableView.leadingAnchor.constraint(
+                equalTo: self.view.safeAreaLayoutGuide.leadingAnchor,
+                constant: Consts.itemsTableViewInsets.left
+            ),
+            self.itemsTableView.trailingAnchor.constraint(
+                equalTo: self.view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -Consts.itemsTableViewInsets.right
+            ),
+            self.itemsTableView.topAnchor.constraint(
+                equalTo: self.completedLabel.bottomAnchor,
+                constant: Consts.itemsTableViewInsets.top
+            ),
+            self.itemsTableView.bottomAnchor.constraint(
+                lessThanOrEqualTo: self.addButton.topAnchor,
+                constant: -Consts.itemsTableViewInsets.bottom
+            ),
         ])
 
         self.updateViewModels()
@@ -124,7 +175,10 @@ final class TodoItemsListViewController: UIViewController {
         self.addButton.layer.shadowPath = UIBezierPath(ovalIn: self.addButton.bounds).cgPath
         self.addButton.layer.shadowRadius = Consts.addButtonShadowRadius
         self.addButton.layer.shadowOpacity = Consts.addButtonShadowOpacity
-        self.addButton.layer.shadowOffset = CGSize(width: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.width, height: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.height)
+        self.addButton.layer.shadowOffset = CGSize(
+            width: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.width,
+            height: self.addButton.bounds.height * Consts.addButtonShadowOffsetSizeRatio.height
+        )
     }
 
     func updateData() {
@@ -263,11 +317,9 @@ extension TodoItemsListViewController: UITableViewDataSource {
         footerView.viewModel = footerViewModel
         return footerView
     }
-
 }
 
 extension TodoItemsListViewController: UITableViewDelegate {
-
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewModel = self.itemViewModels[indexPath.row]
         self.didTapInfo(viewModel: viewModel)
@@ -275,8 +327,11 @@ extension TodoItemsListViewController: UITableViewDelegate {
         self.itemsTableView.deselectRow(at: indexPath, animated: true)
     }
 
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let action = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
+    func tableView(
+        _ tableView: UITableView,
+        leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let action = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             let viewModel = self.itemViewModels[indexPath.row]
             self.didTapDone(viewModel: viewModel)
@@ -284,36 +339,41 @@ extension TodoItemsListViewController: UITableViewDelegate {
         }
 
         action.backgroundColor = ColorScheme.shared.green
-        action.image = UIImage(named: "Action Check")
+        action.image = UIImage(named: "Action Check", in: TodoListResources.bundle, compatibleWith: nil)
         return UISwipeActionsConfiguration(actions: [action])
     }
 
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
         let viewModel = self.itemViewModels[indexPath.row]
-        let info = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
+        let info = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             self.didTapInfo(viewModel: viewModel)
             completionHandler(true)
         }
         info.backgroundColor = ColorScheme.shared.grayLight
-        info.image = UIImage(named: "Action Info")
+        info.image = UIImage(named: "Action Info", in: TodoListResources.bundle, compatibleWith: nil)
 
         // Trash action
-        let trash = UIContextualAction(style: .destructive,
-                                       title: nil) { [weak self] (action, view, completionHandler) in
+        let trash = UIContextualAction(style: .destructive, title: nil) { [weak self] _, _, completionHandler in
             guard let self = self else { return }
             self.didTapDelete(viewModel: viewModel)
             completionHandler(true)
         }
         trash.backgroundColor = ColorScheme.shared.red
-        trash.image = UIImage(named: "Action Trash")
+        trash.image = UIImage(named: "Action Trash", in: TodoListResources.bundle, compatibleWith: nil)
 
         let configuration = UISwipeActionsConfiguration(actions: [trash, info])
 
         return configuration
     }
 
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+    func tableView(
+        _ tableView: UITableView,
+        editingStyleForRowAt indexPath: IndexPath
+    ) -> UITableViewCell.EditingStyle {
         return .none
     }
 }
