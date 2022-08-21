@@ -72,7 +72,6 @@ class TodoItemViewController: UIViewController {
                 }
                 self.delegate?.todoItemViewControllerDidFinish(self)
             }
-//            self.saveData()
         }
         self.itemScrollView.viewModel = viewModel
 
