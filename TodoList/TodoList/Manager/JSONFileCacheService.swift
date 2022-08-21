@@ -37,15 +37,19 @@ final class JSONFileCacheService: FileCacheService {
     }
 
     private let fileCache: FileCache
+    private let syncQueue = DispatchQueue(label: "FileCacheService")
+    private var completionQueue: DispatchQueue {
+        return .main
+    }
 
     init() {
         self.fileCache = FileCache()
     }
 
     func save(to file: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        DispatchQueue.global().async {
+        self.syncQueue.async {
             self.fileCache.save(to: file)
-            DispatchQueue.main.async {
+            self.completionQueue.async {
                 completion(.success(()))
 //                completion(.failure(FileCacheServiceSaveError.unknown))
             }
@@ -53,9 +57,9 @@ final class JSONFileCacheService: FileCacheService {
     }
 
     func load(from file: String, completion: @escaping (Result<[TodoItem], Error>) -> Void) {
-        DispatchQueue.global().async {
+        self.syncQueue.async {
             self.fileCache.load(from: file)
-            DispatchQueue.main.async {
+            self.completionQueue.async {
                 completion(.success(self.fileCache.items))
 //                completion(.failure(FileCacheServiceLoadError.unknown))
             }
