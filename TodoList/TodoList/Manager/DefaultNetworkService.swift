@@ -8,196 +8,357 @@
 
 import Foundation
 import TodoListModels
+import CocoaLumberjack
 
 final class DefaultNetworkService: NetworkService {
-    private let baseURL = "https://beta.mrdekk.ru/todobackend"
-    private let list = "list"
-    private var networkItems = [NetworkTodoItem]()
-    private var revision: Int32 = 0
 
-    func getAllTodoItems(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL) else {
-            return
-        }
+    private let baseURL = "https://beta.mrdekk.ru"
+    private let list = "/todobackend/list"
+    private var accessToken: String = "EnchantingVoicelessSpellcasting"
+    private let urlSession: URLSession = {
+        let urlSession = URLSession(configuration: .default)
+        urlSession.configuration.timeoutIntervalForRequest = 30.0
+        return urlSession
+    }()
 
-        var request = URLRequest(url: listURL)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = ["Authorization": "Bearer EnchantingVoicelessSpellcasting"]
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    self.networkItems = try decoder.decode([NetworkTodoItem].self, from: data)
-                } catch {
-                    print(error)
+    func getAllTodoItemsWithRequest(completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void) {
+        let requestResult = self.requestForList(httpMethod: "GET")
+        switch requestResult {
+        case let .success(request):
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemsListResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case .failure:
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
     }
 
-    func sendAllTodoItems(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL) else {
-            return
-        }
+    func sendAllTodoItemsWithRequest(_ request: NetworkTodoItemsListRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void) {
 
-        var request = URLRequest(url: listURL)
-        request.httpMethod = "PATCH"
-        request.allHTTPHeaderFields = [ "Authorization": "Bearer EnchantingVoicelessSpellcasting",
-                                        "X-Last-Known-Revision": "\(self.revision)" ]
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    self.networkItems = try decoder.decode([NetworkTodoItem].self, from: data)
-                } catch {
-                    print(error)
+        let requestResult = self.requestForListPatch(request, revision: revision, httpMethod: "PATCH")
+        switch requestResult {
+        case let .success(request):
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemsListResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case .failure:
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
     }
 
-    func getTodoItem(at id: String, completion: @escaping (Result<TodoItem, Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL),
-              let itemURL = URL(string: id, relativeTo: listURL) else {
-            return
-        }
+    func getTodoItem(at id: String, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+        let requestResult = self.requestForItemWithIdentifier(id, httpMethod: "GET")
 
-        var request = URLRequest(url: itemURL)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = [ "Authorization": "Bearer EnchantingVoicelessSpellcasting" ]
-
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    let networkItem = try decoder.decode(NetworkTodoItem.self, from: data)
-                } catch {
-                    print(error)
+        switch requestResult {
+        case let .success(request):
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case .failure:
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
     }
 
-    func createTodoItem(_ item: TodoItem, completion: @escaping (Result<TodoItem, Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL) else {
-            return
-        }
+    func createTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+        let requestResult = self.requestForElementCreate(request, revision: revision, httpMethod: "POST")
+        switch requestResult {
+        case let .success(request):
 
-        var request = URLRequest(url: listURL)
-        request.httpMethod = "POST"
-        request.allHTTPHeaderFields = [ "Authorization": "Bearer EnchantingVoicelessSpellcasting",
-                                       "X-Last-Known-Revision": "\(self.revision)" ]
-
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    let networkItem = try decoder.decode(NetworkTodoItem.self, from: data)
-                    self.networkItems.append(networkItem)
-                } catch {
-                    print(error)
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case let .failure(error):
+                    DDLogError(error)
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
     }
 
-    func editTodoItem(_ item: TodoItem, completion: @escaping (Result<TodoItem, Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL),
-              let itemURL = URL(string: item.id, relativeTo: listURL) else {
-            return
-        }
-
-        var request = URLRequest(url: itemURL)
-        request.httpMethod = "PUT"
-        request.allHTTPHeaderFields = [ "Authorization": "Bearer EnchantingVoicelessSpellcasting",
-                                        "X-Last-Known-Revision": "\(self.revision)" ]
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    let networkItem = try decoder.decode(NetworkTodoItem.self, from: data)
-                    self.networkItems.append(networkItem)
-                } catch {
-                    print(error)
+    func editTodoItemWithRequest(_ request: NetworkTodoItemRequest, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+        let requestResult = self.request(request, revision: revision, httpMethod: "PUT")
+        switch requestResult {
+        case let .success(request):
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case .failure:
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
     }
 
-    func deleteTodoItem(at id: String, completion: @escaping (Result<TodoItem, Error>) -> Void) {
-        guard let baseURL = URL(string: baseURL),
-              let listURL = URL(string: list, relativeTo: baseURL),
-              let itemURL = URL(string: id, relativeTo: listURL) else {
-            return
-        }
-
-        var request = URLRequest(url: itemURL)
-        request.httpMethod = "DELETE"
-        request.allHTTPHeaderFields = [ "Authorization": "Bearer EnchantingVoicelessSpellcasting",
-                                        "X-Last-Known-Revision": "\(self.revision)" ]
-
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) -> Void in
-            if let error = error {
-                print(error)
-                return
-            }
-            // Parse JSON data
-            if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    print(data, response, error)
-                    let networkItem = try decoder.decode(NetworkTodoItem.self, from: data)
-                    self.networkItems.append(networkItem)
-                } catch {
-                    print(error)
+    func deleteTodoItem(id: String, revision: Int32, completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void) {
+        let requestResult = self.requestForItemWithIdentifier(id, revision: revision, httpMethod: "DELETE")
+        switch requestResult {
+        case let .success(request):
+            let task = self.dataTask(with: request) { [weak self] result in
+                switch result {
+                case let .success(responsePair):
+                    let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
+                    self?.completionQueue.async {
+                        completion(responseResult)
+                    }
+                case .failure:
+                    self?.completionQueue.async {
+                        completion(.failure(.dataTask))
+                    }
                 }
             }
-        })
-        task.resume()
+            task.resume()
+
+        case let .failure(error):
+            self.completionQueue.async {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private var retryQueue: DispatchQueue {
+        return self.urlSession.delegateQueue.underlyingQueue ?? .main
+    }
+
+    private var completionQueue: DispatchQueue {
+        return .main
+    }
+
+    private func request(_ request: NetworkTodoItemRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        let result = requestForItemWithIdentifier(request.element.id, revision: revision, httpMethod: httpMethod)
+        switch result {
+        case .success(var urlRequest):
+            let encoder = JSONEncoder()
+            do {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.httpBody = try encoder.encode(request)
+            } catch {
+                return .failure(.encoding(error))
+            }
+            return .success(urlRequest)
+
+        case let .failure(error):
+            return .failure(error)
+        }
+    }
+
+    private func requestForItemWithIdentifier(_ identifier: String, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        let requestResult = self.requestForItemWithIdentifier(identifier, httpMethod: httpMethod)
+        let result: Result<URLRequest, NetworkServiceError>
+        switch requestResult {
+        case .success(var urlRequest):
+            urlRequest.setValue("\(revision)", forHTTPHeaderField: "X-Last-Known-Revision")
+            print("urlRequest \(Self.printRequest(urlRequest))")
+            result = .success(urlRequest)
+
+        case let .failure(error):
+            result = .failure(error)
+        }
+        return result
+    }
+
+    private func requestForItemWithIdentifier(_ identifier: String, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        guard var components = URLComponents(string: baseURL) else {
+            return .failure(NetworkServiceError.invalidURL)
+        }
+        guard let encodedId = identifier.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            return .failure(NetworkServiceError.invalidURL)
+        }
+        components.path = list + "/\(encodedId)"
+        guard let itemURL = components.url else {
+            return .failure(NetworkServiceError.invalidURL)
+        }
+
+        var urlRequest = URLRequest(url: itemURL)
+        urlRequest.httpMethod = httpMethod
+        urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        print("urlRequest \(Self.printRequest(urlRequest))")
+
+        return .success(urlRequest)
+    }
+
+    private func requestForElementCreate(_ request: NetworkTodoItemRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        let result = requestForList(httpMethod: httpMethod)
+        switch result {
+        case .success(var urlRequest):
+            urlRequest.setValue("\(revision)", forHTTPHeaderField: "X-Last-Known-Revision")
+
+            let encoder = JSONEncoder()
+            do {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.httpBody = try encoder.encode(request)
+            } catch {
+                return .failure(.encoding(error))
+            }
+            return .success(urlRequest)
+
+        case let .failure(error):
+            return .failure(error)
+        }
+    }
+
+    private func requestForListPatch(_ request: NetworkTodoItemsListRequest, revision: Int32, httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        let result = requestForList(httpMethod: httpMethod)
+        switch result {
+        case .success(var urlRequest):
+            urlRequest.setValue("\(revision)", forHTTPHeaderField: "X-Last-Known-Revision")
+
+            let encoder = JSONEncoder()
+            do {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.httpBody = try encoder.encode(request)
+            } catch {
+                return .failure(.encoding(error))
+            }
+            return .success(urlRequest)
+
+        case let .failure(error):
+            return .failure(error)
+        }
+    }
+
+    private func requestForList(httpMethod: String) -> Result<URLRequest, NetworkServiceError> {
+        guard var components = URLComponents(string: baseURL) else {
+            return .failure(NetworkServiceError.invalidURL)
+        }
+        components.path = list
+        guard let listURL = components.url else {
+            return .failure(NetworkServiceError.invalidURL)
+        }
+
+        var urlRequest = URLRequest(url: listURL)
+        urlRequest.httpMethod = httpMethod
+        urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        return .success(urlRequest)
+    }
+
+    private static func response<T: Decodable>(type: T.Type, from responsePair: (Data, HTTPURLResponse)) -> Result<T, NetworkServiceError> {
+        let (data, response) = responsePair
+
+        switch response.statusCode {
+        case 400:
+            if let str = String(data: data, encoding: .utf8), str == "unsynchronized data" {
+                return .failure(.unsynchronizedData)
+            } else {
+                return .failure(.badRequest)
+            }
+        case 401:
+            return .failure(.unauthorized)
+        case 404:
+            return .failure(.notFound)
+        case 500:
+            return .failure(.server)
+        case 200...299:
+            let decoder = JSONDecoder()
+            do {
+                let item = try decoder.decode(T.self, from: data)
+                return .success(item)
+            } catch {
+                return .failure(.decoding(error))
+            }
+        default:
+            return .failure(.unknown)
+        }
+    }
+
+    private enum DataTaskError: Error {
+        case response(Error)
+        case nonHTTPResponse
+        case noData
+    }
+
+    private func dataTask(with request: URLRequest, completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void) -> URLSessionDataTask {
+        return self.urlSession.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print(error)
+                completion(.failure(.response(error)))
+                return
+            }
+
+            guard let data = data else {
+                completion(.failure(.noData))
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(.failure(.nonHTTPResponse))
+                return
+            }
+
+            completion(.success((data, httpResponse)))
+        }
+    }
+
+    private static func printRequest(_ request: URLRequest) {
+        print("\(request.httpMethod) \(request.url)\n\(request.allHTTPHeaderFields)")
+        if let body = request.httpBody, let str = String(data: body, encoding: .utf8) {
+            print("\(str)")
+        }
     }
 }
