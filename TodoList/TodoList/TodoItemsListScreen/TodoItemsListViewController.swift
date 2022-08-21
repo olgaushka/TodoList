@@ -228,7 +228,7 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func loadData() {
-        self.dependencies.dataService.loadData { [weak self] result in
+        self.dependencies.dataService.getCachedData { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
@@ -236,6 +236,15 @@ final class TodoItemsListViewController: UIViewController {
             case .failure(let error):
                 DDLogError(error.localizedDescription)
                 self.showErrorAlert()
+            }
+            self.dependencies.dataService.loadData { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    self.updateViewModels()
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
             }
         }
     }

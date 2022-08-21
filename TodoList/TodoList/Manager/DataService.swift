@@ -31,31 +31,34 @@ final class DataService {
         self.dataIsDirty = false
     }
 
-    func loadData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
+    func getCachedData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
         self.fileCacheService.load(from: self.fileName) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
-                self.networkService.getAllTodoItemsWithRequest { [weak self] result in
-                    guard let self = self else { return }
+                completion(.success(self.fileCacheService.items))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
 
-                    switch result {
-                    case let .success(response):
-                        if self.fileCacheService.revision != response.revision {
-                            DDLogInfo("dataIsDirty = true  loadData")
-                            self.dataIsDirty = true
-                            self.synchronizeData(completion: completion)
-                        } else {
-                            completion(.success(self.fileCacheService.items))
-                        }
-                    case let .failure(error):
-                        DDLogError(error)
-                        completion(.success(self.fileCacheService.items))
-                        self.dataIsDirty = true
-//                        completion(.failure(error))
-                    }
+    func loadData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
+        self.networkService.getAllTodoItemsWithRequest { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case let .success(response):
+                if self.fileCacheService.revision != response.revision {
+                    DDLogInfo("dataIsDirty = true  loadData")
+                    self.dataIsDirty = true
+                    self.synchronizeData(completion: completion)
+                } else {
+                    completion(.success(self.fileCacheService.items))
                 }
             case let .failure(error):
+                DDLogError(error)
+                self.dataIsDirty = true
                 completion(.failure(error))
             }
         }
