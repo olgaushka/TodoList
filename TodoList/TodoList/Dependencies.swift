@@ -10,4 +10,5 @@ import Foundation
 
 struct Dependencies {
     let dataService: DataService
+    let networkService: NetworkService
 }

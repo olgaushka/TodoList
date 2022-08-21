@@ -30,6 +30,45 @@ final class DefaultNetworkService: NetworkService {
         return .main
     }
 
+    private var networkObservers: [UUID: NetworkObserver] = .init()
+    private var activeTasksCounter: Int = 0
+
+    private func notifyDidStartTask() {
+        let hasRequestsNow = self.activeTasksCounter > 0
+        self.activeTasksCounter += 1
+        let hasRequests = self.activeTasksCounter > 0
+        if hasRequestsNow != hasRequests {
+            self.completionQueue.async { [networkObservers = self.networkObservers] in
+                networkObservers.forEach({ _, observer in observer(hasRequests) })
+            }
+        }
+    }
+
+    private func notifyDidFinishTask() {
+        let hasRequestsNow = self.activeTasksCounter > 0
+        self.activeTasksCounter = max(0, self.activeTasksCounter - 1)
+        let hasRequests = self.activeTasksCounter > 0
+        if hasRequestsNow != hasRequests {
+            self.completionQueue.async { [networkObservers = self.networkObservers] in
+                networkObservers.forEach({ _, observer in observer(hasRequests) })
+            }
+        }
+    }
+
+    var hasRequests: Bool {
+        self.activeTasksCounter > 0
+    }
+
+    func addNetworkObserver(_ observer: @escaping NetworkObserver) -> UUID {
+        let token = UUID()
+        self.networkObservers[token] = observer
+        return token
+    }
+
+    func removeNetworkObserver(_ token: UUID) {
+        self.networkObservers.removeValue(forKey: token)
+    }
+
     func getAllTodoItemsWithRequest(
         completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
     ) {
@@ -372,7 +411,11 @@ final class DefaultNetworkService: NetworkService {
         with request: URLRequest,
         completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
     ) {
-        self._retryableDataTask(with: request, completion: completion)
+        self.notifyDidStartTask()
+        self._retryableDataTask(with: request, completion: { [weak self] result in
+            self?.notifyDidFinishTask()
+            completion(result)
+        })
     }
 
     private func _dataTask(

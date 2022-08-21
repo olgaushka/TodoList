@@ -21,12 +21,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
 
+            let networkService = DefaultNetworkService()
             let dataService = DataService(
                 fileCacheService: JSONFileCacheService(),
                 fileName: "test.json",
-                networkService: DefaultNetworkService()
+                networkService: networkService
             )
-            let dependencies = Dependencies(dataService: dataService)
+            let dependencies = Dependencies(
+                dataService: dataService,
+                networkService: networkService
+            )
             let todoItemsListViewController = TodoItemsListViewController(dependencies: dependencies)
 
             let navigationController = UINavigationController(rootViewController: todoItemsListViewController)

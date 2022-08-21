@@ -42,7 +42,13 @@ enum NetworkServiceError: Error {
     case unknown
 }
 
-protocol NetworkService {
+typealias NetworkObserver = (_ hasRequests: Bool) -> Void
+
+protocol NetworkService: AnyObject {
+    var hasRequests: Bool { get }
+    func addNetworkObserver(_ observer: @escaping NetworkObserver) -> UUID
+    func removeNetworkObserver(_ token: UUID)
+
     func getAllTodoItemsWithRequest(
         completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
     )

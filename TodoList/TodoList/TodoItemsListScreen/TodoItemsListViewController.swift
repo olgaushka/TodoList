@@ -18,6 +18,7 @@ final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies
     private var itemViewModels: [TodoItemCellViewModel] = []
     private var showAll: Bool = true
+    private var networkSubscriptionToken: UUID?
 
     private enum Consts {
         static let cellReuseIdentifier: String = "itemCell"
@@ -63,6 +64,11 @@ final class TodoItemsListViewController: UIViewController {
         return NSLayoutConstraint()
     }()
 
+    private let activityIndicatorView: UIActivityIndicatorView = {
+        let activityIndicatorView = UIActivityIndicatorView(style: .medium)
+        return activityIndicatorView
+    }()
+
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
@@ -86,6 +92,7 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     deinit {
+        self.unsubscribeNetworkObserver()
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -169,6 +176,7 @@ final class TodoItemsListViewController: UIViewController {
 
         self.setupNavigationBar()
         self.loadData()
+        self.subscribeNetworkObserver()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -187,6 +195,36 @@ final class TodoItemsListViewController: UIViewController {
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "Мои дела"
         self.navigationController?.navigationBar.isTranslucent = true
+
+        let rightItem = UIBarButtonItem(customView: self.activityIndicatorView)
+        self.navigationItem.rightBarButtonItems = [rightItem]
+    }
+
+    private func subscribeNetworkObserver() {
+        self.networkSubscriptionToken = self.dependencies.networkService.addNetworkObserver({ hasRequests in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                if hasRequests {
+                    self.activityIndicatorView.startAnimating()
+                } else {
+                    self.activityIndicatorView.stopAnimating()
+                }
+            }
+        })
+
+        if self.dependencies.networkService.hasRequests {
+            self.activityIndicatorView.startAnimating()
+        } else {
+            self.activityIndicatorView.stopAnimating()
+        }
+    }
+
+    private func unsubscribeNetworkObserver() {
+        if let token = self.networkSubscriptionToken {
+            self.dependencies.networkService.removeNetworkObserver(token)
+            self.networkSubscriptionToken = nil
+        }
     }
 
     private func loadData() {
