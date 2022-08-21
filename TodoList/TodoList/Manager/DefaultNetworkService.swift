@@ -19,7 +19,7 @@ final class DefaultNetworkService: NetworkService {
     private var accessToken: String = "EnchantingVoicelessSpellcasting"
     private let urlSession: URLSession = {
         var configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 5
+        configuration.timeoutIntervalForRequest = 30
         let urlSession = URLSession(configuration: configuration)
         return urlSession
     }()
