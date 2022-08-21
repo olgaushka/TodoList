@@ -18,8 +18,9 @@ final class DefaultNetworkService: NetworkService {
     private let list = "/todobackend/list"
     private var accessToken: String = "EnchantingVoicelessSpellcasting"
     private let urlSession: URLSession = {
-        let urlSession = URLSession(configuration: .default)
-        urlSession.configuration.timeoutIntervalForRequest = 30.0
+        var configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 5
+        let urlSession = URLSession(configuration: configuration)
         return urlSession
     }()
     private var retryQueue: DispatchQueue {
@@ -35,7 +36,7 @@ final class DefaultNetworkService: NetworkService {
         let requestResult = self.requestForList(httpMethod: "GET")
         switch requestResult {
         case let .success(request):
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemsListResponse.self, from: responsePair)
@@ -48,7 +49,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -65,7 +65,7 @@ final class DefaultNetworkService: NetworkService {
         let requestResult = self.requestForListPatch(request, revision: revision, httpMethod: "PATCH")
         switch requestResult {
         case let .success(request):
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemsListResponse.self, from: responsePair)
@@ -78,7 +78,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -95,7 +94,7 @@ final class DefaultNetworkService: NetworkService {
 
         switch requestResult {
         case let .success(request):
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
@@ -108,7 +107,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -126,7 +124,7 @@ final class DefaultNetworkService: NetworkService {
         switch requestResult {
         case let .success(request):
 
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
@@ -140,7 +138,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -157,7 +154,7 @@ final class DefaultNetworkService: NetworkService {
         let requestResult = self.request(request, revision: revision, httpMethod: "PUT")
         switch requestResult {
         case let .success(request):
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
@@ -170,7 +167,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -187,7 +183,7 @@ final class DefaultNetworkService: NetworkService {
         let requestResult = self.requestForItemWithIdentifier(id, revision: revision, httpMethod: "DELETE")
         switch requestResult {
         case let .success(request):
-            let task = self.dataTask(with: request) { [weak self] result in
+            self.dataTask(with: request) { [weak self] result in
                 switch result {
                 case let .success(responsePair):
                     let responseResult = Self.response(type: NetworkTodoItemResponse.self, from: responsePair)
@@ -200,7 +196,6 @@ final class DefaultNetworkService: NetworkService {
                     }
                 }
             }
-            task.resume()
 
         case let .failure(error):
             self.completionQueue.async {
@@ -376,8 +371,15 @@ final class DefaultNetworkService: NetworkService {
     private func dataTask(
         with request: URLRequest,
         completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
-    ) -> URLSessionDataTask {
-        return self.urlSession.dataTask(with: request) { data, response, error in
+    ) {
+        self._retryableDataTask(with: request, completion: completion)
+    }
+
+    private func _dataTask(
+        with request: URLRequest,
+        completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
+    ) {
+        let task = self.urlSession.dataTask(with: request) { data, response, error in
             if let error = error {
                 print(error)
                 completion(.failure(.response(error)))
@@ -395,6 +397,68 @@ final class DefaultNetworkService: NetworkService {
             }
 
             completion(.success((data, httpResponse)))
+        }
+        task.resume()
+    }
+
+    private func _retryableDataTask(
+        with request: URLRequest,
+        completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
+    ) {
+        let minDelay: Double = 2
+        self._retryableDataTask(with: request, delay: minDelay, completion: completion)
+    }
+
+    private func _retryableDataTask(
+        with request: URLRequest,
+        delay: TimeInterval,
+        completion: @escaping (Result<(Data, HTTPURLResponse), DataTaskError>) -> Void
+    ) {
+        print("delay: \(delay)")
+
+        let maxDelay: TimeInterval = 120
+        let factor = 1.5
+        let jitter = 0.05
+
+        self._dataTask(with: request) { result in
+            switch result {
+            case let .success(pair):
+                completion(.success(pair))
+
+            case let .failure(error):
+                switch error {
+                case .noData, .nonHTTPResponse:
+                    completion(.failure(error))
+
+                case let .response(responseError):
+                    if let urlError = responseError as? URLError {
+                        switch urlError.code {
+                        case .timedOut,
+                             .cannotFindHost,
+                             .cannotConnectToHost,
+                             .networkConnectionLost,
+                             .dnsLookupFailed,
+                             .notConnectedToInternet,
+                             .badServerResponse,
+                             .cannotLoadFromNetwork,
+                             .callIsActive:
+                            let currentDelay = delay * factor * Double.random(in: (1.0 - jitter)...(1.0 + jitter))
+                            if currentDelay <= maxDelay {
+                                self.retryQueue.asyncAfter(deadline: .now() + currentDelay) {
+                                    self._retryableDataTask(with: request, delay: currentDelay, completion: completion)
+                                }
+                            } else {
+                                completion(.failure(.response(urlError)))
+                            }
+
+                        default:
+                            completion(.failure(.response(urlError)))
+                        }
+                    } else {
+                        completion(.failure(.response(responseError)))
+                    }
+                }
+            }
         }
     }
 }
