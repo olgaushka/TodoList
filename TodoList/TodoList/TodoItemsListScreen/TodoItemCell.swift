@@ -225,8 +225,8 @@ final class TodoItemCell: UITableViewCell {
             self.importanceImageView.image = image
             self.importanceImageViewWidthConstraint.constant = importanceImageView.image?.size.width ?? 0
             self.importanceImageViewHeightConstraint.constant = importanceImageView.image?.size.height ?? 0
-            self.itemTextLabelToImportanceImageViewLeadingConstraint.isActive = true
             self.itemTextLabelToDoneButtonLeadingConstraint.isActive = false
+            self.itemTextLabelToImportanceImageViewLeadingConstraint.isActive = true
         }
 
         let attributeString: NSMutableAttributedString = NSMutableAttributedString(string: viewModel.text)

@@ -10,11 +10,10 @@ import Foundation
 import TodoListModels
 
 final class FileCache {
-    private(set) var items: [TodoItem] = []
+    var items: [TodoItem] = []
 
     func add(item: TodoItem) {
         if self.items.contains(where: { $0.id == item.id }) { return }
-
         self.items.append(item)
     }
 

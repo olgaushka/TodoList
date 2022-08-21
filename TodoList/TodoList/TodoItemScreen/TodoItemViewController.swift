@@ -15,6 +15,11 @@ class TodoItemViewController: UIViewController {
     weak var delegate: TodoItemViewControllerDelegate?
     private let dependencies: Dependencies
     private let itemScrollView: TodoItemScrollView = .init(frame: .zero)
+    private let activityIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+        return activityIndicator
+    }()
+
     private var tapGesture: UITapGestureRecognizer = UITapGestureRecognizer()
 
     init(dependencies: Dependencies) {
@@ -55,10 +60,8 @@ class TodoItemViewController: UIViewController {
         viewModel.didTapDelete = { [weak self] in
             guard let self = self else { return }
             let dependencies = self.dependencies
-            dependencies.fileCache.removeBy(id: self.item.id)
-            dependencies.fileCache.save(to: dependencies.fileName)
-            self.delegate?.todoItemViewControllerDidFinish(self)
-            self.dismiss(animated: true)
+            dependencies.fileCacheService.delete(id: self.item.id)
+            self.saveData()
         }
         self.itemScrollView.viewModel = viewModel
 
@@ -76,6 +79,8 @@ class TodoItemViewController: UIViewController {
             self.itemScrollView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             self.itemScrollView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
         ])
+        self.activityIndicator.center = self.view.center
+        self.view.addSubview(self.activityIndicator)
 
         setupNavigationBar()
     }
@@ -102,6 +107,31 @@ class TodoItemViewController: UIViewController {
         self.navigationController?.navigationBar.shadowImage = UIImage()
     }
 
+    private func saveData() {
+        self.activityIndicator.startAnimating()
+        self.dependencies.fileCacheService.save(to: dependencies.fileName) { [weak self] result in
+            guard let self = self else { return }
+            self.activityIndicator.stopAnimating()
+            switch result {
+            case .success:
+                self.delegate?.todoItemViewControllerDidFinish(self)
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+                self.showErrorAlert()
+            }
+        }
+    }
+
+    private func showErrorAlert() {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: "Во время выполнения запроса произошла ошибка",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Понятно", style: .default, handler: nil))
+        self.present(alert, animated: true)
+    }
+
     @objc
     private func hideKeyboard() {
         view.endEditing(true)
@@ -123,7 +153,7 @@ class TodoItemViewController: UIViewController {
 
         let viewModel = self.itemScrollView.viewModel
         let dependencies = self.dependencies
-        if let item = dependencies.fileCache.items.first(where: { $0.id == self.item.id }) {
+        if let item = dependencies.fileCacheService.items.first(where: { $0.id == self.item.id }) {
             let changedItem = TodoItem(
                 id: item.id,
                 text: viewModel.text,
@@ -133,7 +163,7 @@ class TodoItemViewController: UIViewController {
                 createdAt: item.createdAt,
                 modifiedAt: Date()
             )
-            dependencies.fileCache.modify(item: changedItem)
+            dependencies.fileCacheService.modify(changedItem)
         } else {
             let newItem = TodoItem(
                 text: viewModel.text,
@@ -142,11 +172,9 @@ class TodoItemViewController: UIViewController {
                 isDone: false,
                 createdAt: Date()
             )
-            dependencies.fileCache.add(item: newItem)
+            dependencies.fileCacheService.add(newItem)
         }
-        dependencies.fileCache.save(to: dependencies.fileName)
-        self.delegate?.todoItemViewControllerDidFinish(self)
-        self.dismiss(animated: true)
+        self.saveData()
     }
 
     @objc
