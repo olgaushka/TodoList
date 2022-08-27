@@ -39,8 +39,13 @@ final class DataService {
     }
 
     func getCachedData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
-        self.databaseService.load()
-        completion(.success(self.databaseService.items))
+        let result = self.databaseService.load()
+        switch result {
+        case .success:
+            completion(.success(self.databaseService.items))
+        case let .failure(error):
+            completion(.failure(error))
+        }
     }
 
     func loadData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
@@ -65,7 +70,10 @@ final class DataService {
     }
 
     func add(_ newItem: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
-        self.databaseService.add(item: newItem)
+        let result = self.databaseService.add(newItem)
+        if case let .failure(error) = result {
+            completion(.failure(error))
+        }
 
         if self.dataIsDirty {
             self.synchronizeData { result in
@@ -91,7 +99,7 @@ final class DataService {
             switch result {
             case let .success(response):
                 let item = TodoItem(networkItem: response.element)
-                self.databaseService.modify(item: item)
+                _ = self.databaseService.modify(item)
                 self.databaseService.revision = response.revision
                 completion(.success(()))
             case let .failure(error):
@@ -103,7 +111,10 @@ final class DataService {
     }
 
     func delete(id: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        self.databaseService.removeBy(id: id)
+        let result = self.databaseService.delete(id: id)
+        if case let .failure(error) = result {
+            completion(.failure(error))
+        }
 
         if self.dataIsDirty {
             self.synchronizeData { result in
@@ -133,7 +144,10 @@ final class DataService {
     }
 
     func modify(_ item: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
-        self.databaseService.modify(item: item)
+        let result = self.databaseService.modify(item)
+        if case let .failure(error) = result {
+            completion(.failure(error))
+        }
 
         if self.dataIsDirty {
             self.synchronizeData { result in
@@ -159,7 +173,7 @@ final class DataService {
             switch result {
             case let .success(response):
                 let item = TodoItem(networkItem: response.element)
-                self.databaseService.modify(item: item)
+                _ = self.databaseService.modify(item)
                 self.databaseService.revision = response.revision
                 completion(.success(()))
             case let .failure(error):
@@ -186,7 +200,7 @@ final class DataService {
                 self.databaseService.items = response.list.map { TodoItem(networkItem: $0) }
                 self.databaseService.revision = response.revision
                 self.dataIsDirty = false
-                self.databaseService.save()
+                _ = self.databaseService.save()
                 DDLogInfo("SYNCHRONIZATION")
                 completion(.success(self.databaseService.items))
             case let .failure(error):

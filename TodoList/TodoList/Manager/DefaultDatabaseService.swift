@@ -10,6 +10,12 @@ import Foundation
 import TodoListModels
 import GRDB
 
+enum DatabaseError: Error {
+    case wrongPath
+    case alreadyExist
+    case notExist
+}
+
 final class DefaultDatabaseService: DatabaseService {
     static let id = 1
     var items: [TodoItem]
@@ -45,47 +51,48 @@ final class DefaultDatabaseService: DatabaseService {
             print("REVISION \(self.revision)")
         } catch {
             print(error)
-            // Handle Error
         }
     }
 
     static func make(dbName: String) -> Result<DefaultDatabaseService, Error> {
         let databaseQueueResult = self.loadDatabase(dbName)
         let databaseServiceResult = databaseQueueResult.map { databaseQueue -> DefaultDatabaseService in
-            let databaseService = Self.init(dbQueue: databaseQueue)
+            let databaseService = Self.init(dbQueue: databaseQueue)     // swiftlint:disable:this explicit_init
             return databaseService
         }
         return databaseServiceResult
     }
 
-    func add(item: TodoItem) {
-        if self.items.contains(where: { $0.id == item.id }) { return }
+    func add(_ item: TodoItem) -> Result<Void, Error> {
+        if self.items.contains(where: { $0.id == item.id }) { return .failure(DatabaseError.alreadyExist) }
         self.items.append(item)
 
         do {
             try self.dbQueue.write { database in
                 try DatabaseTodoItem(item).insert(database)
             }
+            return .success(())
         } catch {
             print(error)
-            // Handle Error
+            return .failure(error)
         }
     }
 
-    func removeBy(id: String) {
+    func delete(id: String) -> Result<Void, Error> {
         self.items.removeAll { $0.id == id }
 
         do {
             _ = try self.dbQueue.write { database in
                 try DatabaseTodoItem.deleteOne(database, key: id)
             }
+            return .success(())
         } catch {
             print(error)
-            // Handle Error
+            return .failure(error)
         }
     }
 
-    func modify(item: TodoItem) {
+    func modify(_ item: TodoItem) -> Result<Void, Error> {
         for (index, value) in self.items.enumerated() where value.id == item.id {
             self.items[index] = item
             let databaseTodoItem = DatabaseTodoItem(item)
@@ -94,14 +101,16 @@ final class DefaultDatabaseService: DatabaseService {
                 try dbQueue.write { database in
                     try databaseTodoItem.update(database)
                 }
+                return .success(())
             } catch {
                 print(error)
-                // Handle Error
+                return .failure(error)
             }
         }
+        return .failure((DatabaseError.notExist))
     }
 
-    func save() {
+    func save() -> Result<Void, Error> {
         do {
             try self.dbQueue.write { database in
                 try DatabaseTodoItem.deleteAll(database)
@@ -109,13 +118,14 @@ final class DefaultDatabaseService: DatabaseService {
                     try DatabaseTodoItem(item).insert(database)
                 }
             }
+            return .success(())
         } catch {
             print(error)
-            // Handle Error
+            return .failure(error)
         }
     }
 
-    func load() {
+    func load() -> Result<Void, Error> {
         do {
             let databaseItems = try self.dbQueue.read { database in
                 try DatabaseTodoItem.fetchAll(database)
@@ -123,14 +133,11 @@ final class DefaultDatabaseService: DatabaseService {
             self.items = databaseItems.map { item in
                 DatabaseTodoItem.makeItem(item)
             }
+            return .success(())
         } catch {
             print(error)
-            // Handle Error
+            return .failure(error)
         }
-    }
-
-    enum DatabaseError: Error {
-        case wrongPath
     }
 
     private static func loadDatabase(_ dbName: String) -> Result<DatabaseQueue, Error> {
@@ -163,7 +170,6 @@ final class DefaultDatabaseService: DatabaseService {
         } catch {
             print(error)
             return .failure(error)
-            // Handle Error
         }
     }
 }

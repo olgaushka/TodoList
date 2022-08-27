@@ -12,9 +12,9 @@ import TodoListModels
 protocol DatabaseService: AnyObject {
     var revision: Int32 { get set }
     var items: [TodoItem] { get set }
-    func add(item: TodoItem)
-    func removeBy(id: String)
-    func modify(item: TodoItem)
-    func save()
-    func load()
+    func add(_ item: TodoItem) -> Result<Void, Error>
+    func delete(id: String) -> Result<Void, Error>
+    func modify(_ item: TodoItem) -> Result<Void, Error>
+    func save() -> Result<Void, Error>
+    func load() -> Result<Void, Error>
 }
