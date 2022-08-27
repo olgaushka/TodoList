@@ -21,7 +21,6 @@ struct NetworkTodoItem: Codable {
     let importance: NetworkImportance
     let deadline: Int64?
     let done: Bool
-    let color: String
     let createdAt: Int64
     let changedAt: Int64
     let lastUpdatedBy: String
@@ -32,7 +31,6 @@ struct NetworkTodoItem: Codable {
         case importance
         case deadline
         case done
-        case color
         case createdAt = "created_at"
         case changedAt = "changed_at"
         case lastUpdatedBy = "last_updated_by"
@@ -62,6 +60,5 @@ struct NetworkTodoItem: Codable {
             self.changedAt = self.createdAt
         }
         self.lastUpdatedBy = "1"
-        self.color = "#FFFFFF"
     }
 }
