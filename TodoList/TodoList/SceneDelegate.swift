@@ -21,11 +21,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
 
+            // swiftlint:disable:next force_try
+            let databaseService = try! DefaultDatabaseService.make(dbName: "database.sqlite").get()
+
             let networkService = DefaultNetworkService()
             let dataService = DataService(
                 fileCacheService: JSONFileCacheService(),
                 fileName: "test.json",
-                networkService: networkService
+                networkService: networkService,
+                databaseService: databaseService
             )
             let dependencies = Dependencies(
                 dataService: dataService,
