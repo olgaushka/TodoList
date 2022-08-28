@@ -39,12 +39,13 @@ final class DataService {
     }
 
     func getCachedData(completion: @escaping (Result<[TodoItem], Error>) -> Void) {
-        let result = self.databaseService.load()
-        switch result {
-        case .success:
-            completion(.success(self.databaseService.items))
-        case let .failure(error):
-            completion(.failure(error))
+        self.databaseService.load { result in
+            switch result {
+            case .success:
+                completion(.success(self.databaseService.items))
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
     }
 
@@ -70,11 +71,19 @@ final class DataService {
     }
 
     func add(_ newItem: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
-        let result = self.databaseService.add(newItem)
-        if case let .failure(error) = result {
-            completion(.failure(error))
+        self.databaseService.add(newItem) { [weak self] result in
+            switch result {
+            case .success:
+                self?.addNetwork(newItem) { _ in
+                    completion(.success(()))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
+    }
 
+    private func addNetwork(_ newItem: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
         if self.dataIsDirty {
             self.synchronizeData { result in
                 switch result {
@@ -99,7 +108,7 @@ final class DataService {
             switch result {
             case let .success(response):
                 let item = TodoItem(networkItem: response.element)
-                _ = self.databaseService.modify(item)
+                self.databaseService.modify(item, completion: { _ in })
                 self.databaseService.revision = response.revision
                 completion(.success(()))
             case let .failure(error):
@@ -111,11 +120,19 @@ final class DataService {
     }
 
     func delete(id: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let result = self.databaseService.delete(id: id)
-        if case let .failure(error) = result {
-            completion(.failure(error))
+        self.databaseService.delete(id: id) { [weak self] result in
+            switch result {
+            case .success:
+                self?.deleteNetwork(id: id) { _ in
+                    completion(.success(()))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
+    }
 
+    private func deleteNetwork(id: String, completion: @escaping (Result<Void, Error>) -> Void) {
         if self.dataIsDirty {
             self.synchronizeData { result in
                 switch result {
@@ -144,11 +161,19 @@ final class DataService {
     }
 
     func modify(_ item: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
-        let result = self.databaseService.modify(item)
-        if case let .failure(error) = result {
-            completion(.failure(error))
+        self.databaseService.modify(item) { [weak self] result in
+            switch result {
+            case .success:
+                self?.modifyNetwork(item) { _ in
+                    completion(.success(()))
+                }
+            case let .failure(error):
+                completion(.failure(error))
+            }
         }
+    }
 
+    private func modifyNetwork(_ item: TodoItem, completion: @escaping (Result<Void, Error>) -> Void) {
         if self.dataIsDirty {
             self.synchronizeData { result in
                 switch result {
@@ -173,7 +198,7 @@ final class DataService {
             switch result {
             case let .success(response):
                 let item = TodoItem(networkItem: response.element)
-                _ = self.databaseService.modify(item)
+                self.databaseService.modify(item, completion: { _ in })
                 self.databaseService.revision = response.revision
                 completion(.success(()))
             case let .failure(error):
@@ -197,12 +222,11 @@ final class DataService {
 
             switch result {
             case let .success(response):
-                self.databaseService.items = response.list.map { TodoItem(networkItem: $0) }
-                self.databaseService.revision = response.revision
+                let items = response.list.map { TodoItem(networkItem: $0) }
+                self.databaseService.save(items, revision: response.revision, completion: { _ in })
                 self.dataIsDirty = false
-                _ = self.databaseService.save()
                 DDLogInfo("SYNCHRONIZATION")
-                completion(.success(self.databaseService.items))
+                completion(.success(items))
             case let .failure(error):
                 completion(.failure(error))
             }
