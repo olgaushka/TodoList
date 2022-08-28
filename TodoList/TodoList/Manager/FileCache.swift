@@ -11,6 +11,7 @@ import TodoListModels
 
 final class FileCache {
     var items: [TodoItem] = []
+    var revision: Int32 = 0
 
     func add(item: TodoItem) {
         if self.items.contains(where: { $0.id == item.id }) { return }
@@ -33,9 +34,10 @@ final class FileCache {
         let jsonItems = self.items.map({ item in
             item.json
         })
+        let json:[ String: Any ] = [ "revision": self.revision, "items": jsonItems ]
         if JSONSerialization.isValidJSONObject(jsonItems) {
             do {
-                let rawData = try JSONSerialization.data(withJSONObject: jsonItems, options: .prettyPrinted)
+                let rawData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
                 try rawData.write(to: fileURL, options: .atomic)
             } catch {
                 // Handle Error
@@ -50,11 +52,13 @@ final class FileCache {
             let data = try? Data(contentsOf: fileURL)
             if let jsonData = data {
                 let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
-                if let arr = jsonObject as? [[String: Any]] {
+                if let dict = jsonObject as? [String: Any],
+                   let arr = dict["items"] as? [[String: Any]] {
                     let items = arr.compactMap({ item in
                         TodoItem.parse(json: item)
                     })
                     self.items = items
+                    self.revision = dict["revision"] as? Int32 ?? 0
                 }
             }
         } catch {

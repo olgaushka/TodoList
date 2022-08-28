@@ -13,10 +13,12 @@ import CocoaLumberjack
 import TodoListModels
 import TodoListResources
 
+// swiftlint:disable:next type_body_length
 final class TodoItemsListViewController: UIViewController {
     private let dependencies: Dependencies
     private var itemViewModels: [TodoItemCellViewModel] = []
     private var showAll: Bool = true
+    private var networkSubscriptionToken: UUID?
 
     private enum Consts {
         static let cellReuseIdentifier: String = "itemCell"
@@ -62,6 +64,11 @@ final class TodoItemsListViewController: UIViewController {
         return NSLayoutConstraint()
     }()
 
+    private let activityIndicatorView: UIActivityIndicatorView = {
+        let activityIndicatorView = UIActivityIndicatorView(style: .medium)
+        return activityIndicatorView
+    }()
+
     init(dependencies: Dependencies) {
         self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
@@ -85,6 +92,7 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     deinit {
+        self.unsubscribeNetworkObserver()
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -168,6 +176,7 @@ final class TodoItemsListViewController: UIViewController {
 
         self.setupNavigationBar()
         self.loadData()
+        self.subscribeNetworkObserver()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -186,10 +195,40 @@ final class TodoItemsListViewController: UIViewController {
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "Мои дела"
         self.navigationController?.navigationBar.isTranslucent = true
+
+        let rightItem = UIBarButtonItem(customView: self.activityIndicatorView)
+        self.navigationItem.rightBarButtonItems = [rightItem]
+    }
+
+    private func subscribeNetworkObserver() {
+        self.networkSubscriptionToken = self.dependencies.networkService.addNetworkObserver({ hasRequests in
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                if hasRequests {
+                    self.activityIndicatorView.startAnimating()
+                } else {
+                    self.activityIndicatorView.stopAnimating()
+                }
+            }
+        })
+
+        if self.dependencies.networkService.hasRequests {
+            self.activityIndicatorView.startAnimating()
+        } else {
+            self.activityIndicatorView.stopAnimating()
+        }
+    }
+
+    private func unsubscribeNetworkObserver() {
+        if let token = self.networkSubscriptionToken {
+            self.dependencies.networkService.removeNetworkObserver(token)
+            self.networkSubscriptionToken = nil
+        }
     }
 
     private func loadData() {
-        self.dependencies.fileCacheService.load(from: self.dependencies.fileName) { [weak self] result in
+        self.dependencies.dataService.getCachedData { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
@@ -198,25 +237,20 @@ final class TodoItemsListViewController: UIViewController {
                 DDLogError(error.localizedDescription)
                 self.showErrorAlert()
             }
-        }
-    }
-
-    private func saveData() {
-        self.dependencies.fileCacheService.save(to: self.dependencies.fileName) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success:
-                DDLogInfo("Save success")
-            case .failure(let error):
-                DDLogError(error.localizedDescription)
-                self.showErrorAlert()
-                self.loadData()
+            self.dependencies.dataService.loadData { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    self.updateViewModels()
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
             }
         }
     }
 
     private func updateViewModels() {
-        let allItems = self.dependencies.fileCacheService.items
+        let allItems = self.dependencies.dataService.items
         let notCompletedItems = allItems.filter({ !$0.isDone })
         self.completedLabel.text = "Выполнено — \(allItems.count - notCompletedItems.count)"
         let items: [TodoItem]
@@ -242,7 +276,7 @@ final class TodoItemsListViewController: UIViewController {
 
     private func didTapInfo(viewModel: TodoItemCellViewModel?) {
         let todoItemViewController = TodoItemViewController(dependencies: self.dependencies)
-        if let item = self.dependencies.fileCacheService.items.first(where: { $0.id == viewModel?.id }) {
+        if let item = self.dependencies.dataService.items.first(where: { $0.id == viewModel?.id }) {
             todoItemViewController.item = item
         }
         todoItemViewController.delegate = self
@@ -251,17 +285,30 @@ final class TodoItemsListViewController: UIViewController {
     }
 
     private func didTapDelete(viewModel: TodoItemCellViewModel) {
-        self.dependencies.fileCacheService.delete(id: viewModel.id)
-        self.saveData()
+        self.dependencies.dataService.delete(id: viewModel.id) { result in
+            switch result {
+            case .success:
+                DDLogInfo("Delete success")
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+            }
+        }
         self.updateViewModels()
     }
 
     private func didTapDone(viewModel: TodoItemCellViewModel) {
-        let dependencies = self.dependencies
-        guard let item = dependencies.fileCacheService.items.first(where: { $0.id == viewModel.id }) else { return }
+        guard let item = self.dependencies.dataService.items.first(where: { $0.id == viewModel.id }) else { return }
         let changedItem = item.toggleCompleted()
-        self.dependencies.fileCacheService.modify(changedItem)
-        self.saveData()
+        dependencies.dataService.modify(changedItem) {  [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success:
+                DDLogInfo("Modify success")
+                self.updateViewModels()
+            case .failure(let error):
+                DDLogError(error.localizedDescription)
+            }
+        }
         self.updateViewModels()
     }
 
@@ -337,9 +384,18 @@ extension TodoItemsListViewController: UITableViewDataSource {
             guard let self = self else { return }
 
             let newItem = TodoItem(text: footerViewModel.text)
-            self.dependencies.fileCacheService.add(newItem)
-            self.saveData()
+            self.dependencies.dataService.add(newItem) {  [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    DDLogInfo("Create success")
+                    self.updateViewModels()
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
+            }
             self.updateViewModels()
+
             UIView.setAnimationsEnabled(false)
             self.itemsTableView.reloadSections(IndexSet(integer: 0), with: UITableView.RowAnimation.none)
             UIView.setAnimationsEnabled(true)
@@ -353,7 +409,6 @@ extension TodoItemsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewModel = self.itemViewModels[indexPath.row]
         self.didTapInfo(viewModel: viewModel)
-
         self.itemsTableView.deselectRow(at: indexPath, animated: true)
     }
 

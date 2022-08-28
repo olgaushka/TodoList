@@ -59,9 +59,19 @@ class TodoItemViewController: UIViewController {
         )
         viewModel.didTapDelete = { [weak self] in
             guard let self = self else { return }
-            let dependencies = self.dependencies
-            dependencies.fileCacheService.delete(id: self.item.id)
-            self.saveData()
+            self.activityIndicator.startAnimating()
+            self.dependencies.dataService.delete(id: self.item.id) { [weak self] result in
+                guard let self = self else { return }
+
+                self.activityIndicator.stopAnimating()
+                switch result {
+                case .success:
+                    break
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
+                self.delegate?.todoItemViewControllerDidFinish(self)
+            }
         }
         self.itemScrollView.viewModel = viewModel
 
@@ -107,21 +117,6 @@ class TodoItemViewController: UIViewController {
         self.navigationController?.navigationBar.shadowImage = UIImage()
     }
 
-    private func saveData() {
-        self.activityIndicator.startAnimating()
-        self.dependencies.fileCacheService.save(to: dependencies.fileName) { [weak self] result in
-            guard let self = self else { return }
-            self.activityIndicator.stopAnimating()
-            switch result {
-            case .success:
-                self.delegate?.todoItemViewControllerDidFinish(self)
-            case .failure(let error):
-                DDLogError(error.localizedDescription)
-                self.showErrorAlert()
-            }
-        }
-    }
-
     private func showErrorAlert() {
         let alert = UIAlertController(
             title: "Ошибка",
@@ -153,7 +148,7 @@ class TodoItemViewController: UIViewController {
 
         let viewModel = self.itemScrollView.viewModel
         let dependencies = self.dependencies
-        if let item = dependencies.fileCacheService.items.first(where: { $0.id == self.item.id }) {
+        if let item = dependencies.dataService.items.first(where: { $0.id == self.item.id }) {
             let changedItem = TodoItem(
                 id: item.id,
                 text: viewModel.text,
@@ -163,7 +158,19 @@ class TodoItemViewController: UIViewController {
                 createdAt: item.createdAt,
                 modifiedAt: Date()
             )
-            dependencies.fileCacheService.modify(changedItem)
+            self.activityIndicator.startAnimating()
+            dependencies.dataService.modify(changedItem) { [weak self] result in
+                guard let self = self else { return }
+
+                self.activityIndicator.stopAnimating()
+                switch result {
+                case .success:
+                    break
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
+                self.delegate?.todoItemViewControllerDidFinish(self)
+            }
         } else {
             let newItem = TodoItem(
                 text: viewModel.text,
@@ -172,9 +179,20 @@ class TodoItemViewController: UIViewController {
                 isDone: false,
                 createdAt: Date()
             )
-            dependencies.fileCacheService.add(newItem)
+            self.activityIndicator.startAnimating()
+            dependencies.dataService.add(newItem) { [weak self] result in
+                guard let self = self else { return }
+
+                self.activityIndicator.stopAnimating()
+                switch result {
+                case .success:
+                    break
+                case .failure(let error):
+                    DDLogError(error.localizedDescription)
+                }
+                self.delegate?.todoItemViewControllerDidFinish(self)
+            }
         }
-        self.saveData()
     }
 
     @objc

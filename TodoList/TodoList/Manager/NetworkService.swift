@@ -9,8 +9,71 @@
 import Foundation
 import TodoListModels
 
-protocol NetworkService {
-    func getAllTodoItems(completion: @escaping (Result<[TodoItem], Error>) -> Void)
-    func editTodoItem(_ item: TodoItem, completion: @escaping (Result<TodoItem, Error>) -> Void)
-    func deleteTodoItem(at id: String, completion: @escaping (Result<TodoItem, Error>) -> Void)
+struct NetworkTodoItemsListRequest: Encodable {
+    var list: [NetworkTodoItem]
+}
+
+struct NetworkTodoItemsListResponse: Decodable {
+    var list: [NetworkTodoItem]
+    var revision: Int32
+}
+
+struct NetworkTodoItemRequest: Encodable {
+    var element: NetworkTodoItem
+}
+
+struct NetworkTodoItemResponse: Decodable {
+    var element: NetworkTodoItem
+    var revision: Int32
+}
+
+enum NetworkServiceError: Error {
+    case invalidURL
+    case decoding(Error)
+    case encoding(Error)
+    case dataTask
+
+    case badRequest
+    case unsynchronizedData
+    case unauthorized
+    case notFound
+    case server
+
+    case unknown
+}
+
+typealias NetworkObserver = (_ hasRequests: Bool) -> Void
+
+protocol NetworkService: AnyObject {
+    var hasRequests: Bool { get }
+    func addNetworkObserver(_ observer: @escaping NetworkObserver) -> UUID
+    func removeNetworkObserver(_ token: UUID)
+
+    func getAllTodoItemsWithRequest(
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    )
+    func sendAllTodoItemsWithRequest(
+        _ request: NetworkTodoItemsListRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemsListResponse, NetworkServiceError>) -> Void
+    )
+    func getTodoItem(
+        at id: String,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func createTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func editTodoItemWithRequest(
+        _ request: NetworkTodoItemRequest,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
+    func deleteTodoItem(
+        id: String,
+        revision: Int32,
+        completion: @escaping (Result<NetworkTodoItemResponse, NetworkServiceError>) -> Void
+    )
 }

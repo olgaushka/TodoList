@@ -9,8 +9,9 @@
 import Foundation
 import TodoListModels
 
-protocol FileCacheService {
-    var items: [TodoItem] { get }
+protocol FileCacheService: AnyObject {
+    var revision: Int32 { get set }
+    var items: [TodoItem] { get set }
     func save(to file: String, completion: @escaping (Result<Void, Error>) -> Void)
     func load(from file: String, completion: @escaping (Result<[TodoItem], Error>) -> Void)
     func add(_ newItem: TodoItem)

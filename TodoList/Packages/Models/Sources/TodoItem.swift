@@ -54,7 +54,7 @@ extension TodoItem {
             deadline: self.deadline,
             isDone: !self.isDone,
             createdAt: self.createdAt,
-            modifiedAt: self.modifiedAt
+            modifiedAt: Date()
         )
   }
 }
